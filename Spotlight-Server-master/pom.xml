@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.yappyapps.spotlight</groupId>
+	<artifactId>Spotlight-Server</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>spotlight_utility_service</module>
+		<module>spotlight_discovery_server</module>
+		<module>spotlight_config_server</module>
+		<module>spotlight_user_service</module>
+		<module>spotlight_coupon_service</module>
+		<module>spotlight_genre_service</module>
+		<module>spotlight_viewer_service</module>
+		<module>spotlight_event_service</module>
+		<module>spotlight_payment_service</module>
+		<module>spotlight_gateway_server</module>
+		<module>spotlight_search_service</module>
+		<module>spotlight_analytics_service</module>
+		<module>spotlight_notification_service</module>
+	</modules>
+</project>

@@ -1,0 +1,33 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+/spotlight-user-service.log
+/spotlight-user-service.log.2018-07-18.0.log
+/spotlight-user-service.log.2018-07-20.0.log
+/spotlight-user-service.log.2018-07-21.0.log
+/spotlight-user-service.log.2018-07-22.0.log
+/spotlight-user-service.log.2018-07-25.0.log
+/spotlight-user-service.log.2018-07-26.0.log
+/spotlight-user-service.log.2018-07-27.0.log
+/spotlight-user-service.log.2018-07-29.0.log

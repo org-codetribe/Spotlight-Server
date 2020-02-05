@@ -1,0 +1,1 @@
+mvn exec:java -Dstart-class="com.yappyapps.spotlight.GenreServiceApplication" -Dspring.profiles.active=$1 &
