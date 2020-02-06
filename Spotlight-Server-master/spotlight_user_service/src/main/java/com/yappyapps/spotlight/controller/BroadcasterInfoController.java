@@ -1,8 +1,11 @@
 package com.yappyapps.spotlight.controller;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.yappyapps.spotlight.domain.Viewer;
+import com.yappyapps.spotlight.repository.IViewerRepository;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +72,8 @@ public class BroadcasterInfoController {
 	 */
 	@Autowired
 	private IBroadcasterInfoService broadcasterInfoService;
+	@Autowired
+	private IViewerRepository viewerRepository;
 
 	/**
 	 * Gson dependency will be automatically injected.
@@ -219,6 +224,7 @@ public class BroadcasterInfoController {
 	@RequestMapping(method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
 	public @ResponseBody String getAllBroadcastersByGenre(
 			@RequestParam(value = "genreId", required = false) String genreId,
+			@RequestParam(value = "viewerId", required = false) String viewerId,
 			@RequestParam(value = "limit", required = false) String limit,
 			@RequestParam(value = "offset", required = false) String offset,
 			@RequestParam(value = "direction", required = false) String direction,
@@ -244,6 +250,12 @@ public class BroadcasterInfoController {
 			} else {
 				if (genreId != null)
 					result = broadcasterInfoService.getAllBroadcasterInfos(Integer.valueOf(genreId));
+				else if(viewerId != null) {
+					Optional<Viewer> viewerEntity = viewerRepository.findById(Integer.valueOf(viewerId));
+					if(!viewerEntity.isPresent())
+						throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+					result = broadcasterInfoService.getAllBroadcasterInfoWithViewer(viewerEntity.get());
+				}
 				else
 					result = broadcasterInfoService.getAllBroadcasterInfos();
 			}
