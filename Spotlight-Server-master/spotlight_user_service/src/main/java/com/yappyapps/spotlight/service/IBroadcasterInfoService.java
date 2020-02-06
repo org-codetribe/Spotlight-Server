@@ -1,6 +1,7 @@
 package com.yappyapps.spotlight.service;
 
 import com.yappyapps.spotlight.domain.BroadcasterInfo;
+import com.yappyapps.spotlight.domain.Viewer;
 import com.yappyapps.spotlight.exception.AlreadyExistException;
 import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.InvalidParameterException;
@@ -387,5 +388,6 @@ public interface IBroadcasterInfoService {
 			throws ResourceNotFoundException, BusinessException, Exception;
 
 	public String getAllCategories() throws ResourceNotFoundException, BusinessException, Exception;
+	public String getAllBroadcasterInfoWithViewer(Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception;
 
 }

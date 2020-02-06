@@ -286,6 +286,42 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 
 	}
 
+
+
+
+
+
+
+
+	@Override
+	public String getAllBroadcasterInfoWithViewer(Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception {
+		String result = null;
+
+		List<BroadcasterInfo> broadcasterInfoList = new ArrayList<BroadcasterInfo>();
+		try {
+			broadcasterInfoList = (List<BroadcasterInfo>) broadcasterInfoRepository.findAll();
+		} catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+			throw new Exception(sqlException.getMessage());
+		} catch (HibernateException | JpaSystemException sqlException) {
+			throw new Exception(sqlException.getMessage());
+		}
+
+		if (broadcasterInfoList.size() <= 0) {
+			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+		}
+
+		JSONObject jObj = new JSONObject();
+		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, viewer));
+
+		result = utils.constructSucessJSON(jObj);
+
+		return result;
+
+	}
+
+
+
+
 	/**
 	 * This method is used to get all BroadcasterInfo Users by Genre.
 	 * 
@@ -1220,4 +1256,5 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 
 		return result;
 	}
+
 }
