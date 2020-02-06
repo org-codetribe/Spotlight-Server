@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 
+import com.yappyapps.spotlight.domain.Viewer;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -360,6 +361,43 @@ public class SearchService implements ISearchService {
         JSONObject jObj = new JSONObject();
 		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
 		
+		result = utils.constructSucessJSON(jObj);
+
+		return result;
+	}
+
+
+
+	@Override
+	@Transactional
+	public String fuzzySearchBroadcasters(String searchTerm, Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception{
+		String result = "";
+
+		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
+		QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
+		Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+				.matching(searchTerm).createQuery();
+		LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+
+		javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
+
+		// execute search
+		List<BroadcasterInfo> broadcasterInfoList = null;
+		try {
+			broadcasterInfoList = jpaQuery.getResultList();
+			LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+		} catch (NoResultException nre) {
+			LOGGER.error("error");
+			nre.printStackTrace();
+		}
+
+		if(broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) {
+			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+		}
+
+		JSONObject jObj = new JSONObject();
+		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
+
 		result = utils.constructSucessJSON(jObj);
 
 		return result;

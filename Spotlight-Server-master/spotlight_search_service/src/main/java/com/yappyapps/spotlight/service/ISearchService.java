@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.service;
 
+import com.yappyapps.spotlight.domain.Viewer;
 import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 
@@ -95,7 +96,7 @@ public interface ISearchService {
 	 */
 	public String fuzzySearchBroadcasters(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
 			throws ResourceNotFoundException, BusinessException, Exception;
-
+	public String fuzzySearchBroadcasters(String searchTerm, Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception;
 
 	/**
 	 * This method is used to get all the search results by searchTerm.

@@ -1,9 +1,12 @@
 package com.yappyapps.spotlight.controller;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.yappyapps.spotlight.domain.Viewer;
+import com.yappyapps.spotlight.repository.IViewerRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +34,9 @@ import com.yappyapps.spotlight.util.Utils;
 /**
  * The SearchController class is the controller which will expose the
  * search functionality.
- * 
+ *
  * <h1>@RestController</h1> will enable it to expose the REST APIs.
- * 
+ *
  * @author Naveen Goswami
  * @version 1.0
  * @since 2018-07-14
@@ -42,304 +45,277 @@ import com.yappyapps.spotlight.util.Utils;
 @RestController
 @RequestMapping(value = "1.0/search")
 public class SearchController {
-	/**
-	 * Logger for the class.
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
+    /**
+     * Logger for the class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchController.class);
 
-	/**
-	 * Controller Name.
-	 */
-	private static final String controller = "Search";
+    /**
+     * Controller Name.
+     */
+    private static final String controller = "Search";
+    @Autowired
+    private IViewerRepository viewerRepository;
+    /**
+     * ISearchService dependency will be automatically injected.
+     * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
+     */
+    @Autowired
+    private ISearchService searchService;
 
-	/**
-	 * ISearchService dependency will be automatically injected.
-	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
-	 */
-	@Autowired
-	private ISearchService searchService;
+    /**
+     * MeteringService dependency will be automatically injected.
+     * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
+     */
+    @Autowired
+    private MeteringService meteringService;
 
-	/**
-	 * MeteringService dependency will be automatically injected.
-	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
-	 */
-	@Autowired
-	private MeteringService meteringService;
+    /**
+     * Gson dependency will be automatically injected.
+     * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
+     */
+    @Autowired
+    private Gson gson;
 
-	/**
-	 * Gson dependency will be automatically injected.
-	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
-	 */
-	@Autowired
-	private Gson gson;
+    /**
+     * Utils dependency will be automatically injected.
+     * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
+     */
+    @Autowired
+    private Utils utils;
 
-	/**
-	 * Utils dependency will be automatically injected.
-	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
-	 */
-	@Autowired
-	private Utils utils;
+    /**
+     * This method is used to expose the REST API as GET to get all Genres with
+     * paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      String
+     * @param offset:     String
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return ResponseBody: Genres in JSON format.
+     * @throws InvalidParameterException InvalidParameterException
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     */
+    @RequestMapping(value = "/fuzzy/{searchTerm}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String fuzzySearch(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
+                       @RequestParam(value = "offset", required = false) String offset,
+                       @RequestParam(value = "direction", required = false) String direction,
+                       @RequestParam(value = "orderBy", required = false) String orderBy)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "fuzzySearch";
+        LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm + " :: limit :: " + limit + " :: offset :: " + offset
+                + " :: direction :: " + direction + " :: orderBy :: " + orderBy);
+        long startTime = System.currentTimeMillis();
+        utils.isEmptyOrNull(searchTerm, "searchTerm");
+        utils.isMinLengthValid(searchTerm, "searchTerm", 3);
+        String result = null;
 
-	/**
-	 * This method is used to expose the REST API as GET to get all Genres with
-	 * paging.
-	 * 
-	 * @param searchTerm:
-	 *            String
-	 * @param limit:
-	 *            String
-	 * @param offset:
-	 *            String
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * @return ResponseBody: Genres in JSON format.
-	 * 
-	 * @throws InvalidParameterException
-	 *             InvalidParameterException
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * 
-	 */
-	@RequestMapping(value = "/fuzzy/{searchTerm}", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-	public @ResponseBody String fuzzySearch(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
-			@RequestParam(value = "offset", required = false) String offset,
-			@RequestParam(value = "direction", required = false) String direction,
-			@RequestParam(value = "orderBy", required = false) String orderBy)
-			throws InvalidParameterException, ResourceNotFoundException, BusinessException {
-		String operation = "fuzzySearch";
-		LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm  + " :: limit :: " + limit + " :: offset :: " + offset
-				+ " :: direction :: " + direction + " :: orderBy :: " + orderBy);
-		long startTime = System.currentTimeMillis();
-		utils.isEmptyOrNull(searchTerm, "searchTerm");
-		utils.isMinLengthValid(searchTerm, "searchTerm", 3);
-		String result = null;
-		
-		if(offset == null)
-			offset = "0";
+        if (offset == null)
+            offset = "0";
 
-		if(limit == null)
-			limit = "6";
-		
-		if(direction == null)
-			direction = "ASC";
+        if (limit == null)
+            limit = "6";
 
-		if(orderBy == null)
-			orderBy = "id";
+        if (direction == null)
+            direction = "ASC";
 
-		try {
-			if (offset != null && limit != null) {
-				utils.isInteger(offset, "offset");
-				utils.isInteger(limit, "limit");
-				utils.isOrderByDirectionValid(direction);
-				utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
+        if (orderBy == null)
+            orderBy = "id";
 
-				result = searchService.fuzzySearch(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
-			} else {
-				result = searchService.fuzzySearch(searchTerm);
-			}
-		} catch (InvalidParameterException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (ResourceNotFoundException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (BusinessException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
-			throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
-		} finally {
-			meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
-		}
-		return result;
-	}
+        try {
+            if (offset != null && limit != null) {
+                utils.isInteger(offset, "offset");
+                utils.isInteger(limit, "limit");
+                utils.isOrderByDirectionValid(direction);
+                utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
 
-	/**
-	 * This method is used to expose the REST API as GET to get all Genres with
-	 * paging.
-	 * 
-	 * @param searchTerm:
-	 *            String
-	 * @param limit:
-	 *            String
-	 * @param offset:
-	 *            String
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * @return ResponseBody: Genres in JSON format.
-	 * 
-	 * @throws InvalidParameterException
-	 *             InvalidParameterException
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * 
-	 */
-	@RequestMapping(value = "/fuzzy/broadcasters/{searchTerm}", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-	public @ResponseBody String fuzzySearchBroadcasters(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
-			@RequestParam(value = "offset", required = false) String offset,
-			@RequestParam(value = "direction", required = false) String direction,
-			@RequestParam(value = "orderBy", required = false) String orderBy)
-			throws InvalidParameterException, ResourceNotFoundException, BusinessException {
-		String operation = "fuzzySearchBroadcasters";
-		LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm  + " :: limit :: " + limit + " :: offset :: " + offset
-				+ " :: direction :: " + direction + " :: orderBy :: " + orderBy);
-		long startTime = System.currentTimeMillis();
-		utils.isEmptyOrNull(searchTerm, "searchTerm");
-		utils.isMinLengthValid(searchTerm, "searchTerm", 3);
-		String result = null;
-		try {
-			if (offset != null && limit != null) {
-				utils.isInteger(offset, "offset");
-				utils.isInteger(limit, "limit");
-				utils.isOrderByDirectionValid(direction);
-				utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
+                result = searchService.fuzzySearch(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+            } else {
+                result = searchService.fuzzySearch(searchTerm);
+            }
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
 
-				result = searchService.fuzzySearchBroadcasters(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
-			} else {
-				result = searchService.fuzzySearchBroadcasters(searchTerm);
-			}
-		} catch (InvalidParameterException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (ResourceNotFoundException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (BusinessException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
-			throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
-		} finally {
-			meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
-		}
-		return result;
-	}
+    /**
+     * This method is used to expose the REST API as GET to get all Genres with
+     * paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      String
+     * @param offset:     String
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return ResponseBody: Genres in JSON format.
+     * @throws InvalidParameterException InvalidParameterException
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     */
+    @RequestMapping(value = "/fuzzy/broadcasters/{searchTerm}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String fuzzySearchBroadcasters(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
+                                   @RequestParam(value = "offset", required = false) String offset,
+                                   @RequestParam(value = "viewerId", required = false) String viewerId,
+                                   @RequestParam(value = "direction", required = false) String direction,
+                                   @RequestParam(value = "orderBy", required = false) String orderBy)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "fuzzySearchBroadcasters";
+        LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm + " :: limit :: " + limit + " :: offset :: " + offset
+                + " :: direction :: " + direction + " :: orderBy :: " + orderBy);
+        long startTime = System.currentTimeMillis();
+        utils.isEmptyOrNull(searchTerm, "searchTerm");
+        utils.isMinLengthValid(searchTerm, "searchTerm", 3);
+        String result = null;
+        try {
+            if (offset != null && limit != null) {
+                utils.isInteger(offset, "offset");
+                utils.isInteger(limit, "limit");
+                utils.isOrderByDirectionValid(direction);
+                utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
 
-	/**
-	 * This method is used to expose the REST API as GET to get all Genres with
-	 * paging.
-	 * 
-	 * @param searchTerm:
-	 *            String
-	 * @param limit:
-	 *            String
-	 * @param offset:
-	 *            String
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * @return ResponseBody: Genres in JSON format.
-	 * 
-	 * @throws InvalidParameterException
-	 *             InvalidParameterException
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * 
-	 */
-	@RequestMapping(value = "/fuzzy/events/{searchTerm}", method = RequestMethod.GET, produces = { MediaType.APPLICATION_JSON_VALUE })
-	public @ResponseBody String fuzzySearchEvents(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
-			@RequestParam(value = "offset", required = false) String offset,
-			@RequestParam(value = "direction", required = false) String direction,
-			@RequestParam(value = "orderBy", required = false) String orderBy)
-			throws InvalidParameterException, ResourceNotFoundException, BusinessException {
-		String operation = "fuzzySearchEvents";
-		LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm  + " :: limit :: " + limit + " :: offset :: " + offset
-				+ " :: direction :: " + direction + " :: orderBy :: " + orderBy);
-		long startTime = System.currentTimeMillis();
-		utils.isEmptyOrNull(searchTerm, "searchTerm");
-		utils.isMinLengthValid(searchTerm, "searchTerm", 3);
-		String result = null;
-		try {
-			if (offset != null && limit != null) {
-				utils.isInteger(offset, "offset");
-				utils.isInteger(limit, "limit");
-				utils.isOrderByDirectionValid(direction);
-				utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
+                result = searchService.fuzzySearchBroadcasters(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+            } else if (viewerId != null) {
+                Optional<Viewer> viewerEntity = viewerRepository.findById(Integer.valueOf(viewerId));
+                if (!viewerEntity.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+                result = searchService.fuzzySearchBroadcasters(searchTerm, viewerEntity.get());
+            } else {
+                result = searchService.fuzzySearchBroadcasters(searchTerm);
+            }
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
 
-				result = searchService.fuzzySearchEvents(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
-			} else {
-				result = searchService.fuzzySearchEvents(searchTerm);
-			}
-		} catch (InvalidParameterException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (ResourceNotFoundException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (BusinessException e) {
-			LOGGER.error(e.getMessage());
-			throw e;
-		} catch (Exception e) {
-			LOGGER.error(e.getMessage());
-			throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
-		} finally {
-			meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
-		}
-		return result;
-	}
+    /**
+     * This method is used to expose the REST API as GET to get all Genres with
+     * paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      String
+     * @param offset:     String
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return ResponseBody: Genres in JSON format.
+     * @throws InvalidParameterException InvalidParameterException
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     */
+    @RequestMapping(value = "/fuzzy/events/{searchTerm}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String fuzzySearchEvents(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
+                             @RequestParam(value = "offset", required = false) String offset,
 
-	/**
-	 * This method is used to catch ResourceNotFoundException at Controller level.
-	 * 
-	 * @param response:
-	 *            HttpServletResponse.
-	 * 
-	 * @throws IOException IOException
-	 */
-	@ExceptionHandler(ResourceNotFoundException.class)
-	void handleNotFoundExceptions(HttpServletResponse response) throws IOException {
-		response.sendError(HttpStatus.NOT_FOUND.value());
-	}
+                             @RequestParam(value = "direction", required = false) String direction,
+                             @RequestParam(value = "orderBy", required = false) String orderBy)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "fuzzySearchEvents";
+        LOGGER.info("SearchController :: " + operation + " :: searchTerm :: " + searchTerm + " :: limit :: " + limit + " :: offset :: " + offset
+                + " :: direction :: " + direction + " :: orderBy :: " + orderBy);
+        long startTime = System.currentTimeMillis();
+        utils.isEmptyOrNull(searchTerm, "searchTerm");
+        utils.isMinLengthValid(searchTerm, "searchTerm", 3);
+        String result = null;
+        try {
+            if (offset != null && limit != null) {
+                utils.isInteger(offset, "offset");
+                utils.isInteger(limit, "limit");
+                utils.isOrderByDirectionValid(direction);
+                utils.isOrderByPropertyValid(orderBy, BroadcasterInfo.class);
 
-	/**
-	 * This method is used to catch InvalidParameterException at Controller level.
-	 * 
-	 * @param response:
-	 *            HttpServletResponse.
-	 * 
-	 * @throws IOException IOException
-	 */
-	@ExceptionHandler(InvalidParameterException.class)
-	void handleBadRequests(HttpServletResponse response) throws IOException {
-		response.sendError(HttpStatus.BAD_REQUEST.value());
-	}
+                result = searchService.fuzzySearchEvents(searchTerm, Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+            } else {
+                result = searchService.fuzzySearchEvents(searchTerm);
+            }
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
 
-	/**
-	 * This method is used to catch AlreadyExistException at Controller level.
-	 * 
-	 * @param response:
-	 *            HttpServletResponse.
-	 * 
-	 * @throws IOException IOException
-	 */
-	@ExceptionHandler(AlreadyExistException.class)
-	void handleAlreadyExistRequests(HttpServletResponse response) throws IOException {
-		response.sendError(HttpStatus.CONFLICT.value());
-	}
+    /**
+     * This method is used to catch ResourceNotFoundException at Controller level.
+     *
+     * @param response: HttpServletResponse.
+     * @throws IOException IOException
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    void handleNotFoundExceptions(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.NOT_FOUND.value());
+    }
 
-	/**
-	 * This method is used to catch BusinessException at Controller level.
-	 * 
-	 * @param response:
-	 *            HttpServletResponse.
-	 * 
-	 * @throws IOException IOException
-	 */
-	@ExceptionHandler(BusinessException.class)
-	void handleInternalServerErrors(HttpServletResponse response) throws IOException {
-		response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	}
+    /**
+     * This method is used to catch InvalidParameterException at Controller level.
+     *
+     * @param response: HttpServletResponse.
+     * @throws IOException IOException
+     */
+    @ExceptionHandler(InvalidParameterException.class)
+    void handleBadRequests(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.BAD_REQUEST.value());
+    }
+
+    /**
+     * This method is used to catch AlreadyExistException at Controller level.
+     *
+     * @param response: HttpServletResponse.
+     * @throws IOException IOException
+     */
+    @ExceptionHandler(AlreadyExistException.class)
+    void handleAlreadyExistRequests(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.CONFLICT.value());
+    }
+
+    /**
+     * This method is used to catch BusinessException at Controller level.
+     *
+     * @param response: HttpServletResponse.
+     * @throws IOException IOException
+     */
+    @ExceptionHandler(BusinessException.class)
+    void handleInternalServerErrors(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+    }
 }
