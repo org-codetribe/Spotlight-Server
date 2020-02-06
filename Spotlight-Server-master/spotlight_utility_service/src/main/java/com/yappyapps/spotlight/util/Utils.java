@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.yappyapps.spotlight.domain.JwtViewer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.json.JSONArray;
@@ -651,6 +652,8 @@ public class Utils {
 		authObj.put("expiresAt", expiresAt.getTime());
 		authObj.put("tokenType", "Bearer");
 		authObj.put("isBroadCasterExist",isBroadCasterExist);
+		authObj.put("id",((JwtViewer) userDetails).getId());
+	
 		
 		return authObj; 
 		
