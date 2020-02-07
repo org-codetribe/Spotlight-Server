@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.Date;
 
 @RestController
-public class ViewerRestController {
+public class 	ViewerRestController {
 	/**
 	 * Logger for the class.
 	 */
@@ -191,7 +191,7 @@ public class ViewerRestController {
 						isBrodcast  = true;
 
 					UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(byEmailFB.getUsername());
-					JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,isBrodcast);
+					JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,spotlightUser);
 					JSONObject jObj = new JSONObject();
 					jObj.put(IConstants.AUTH, authObj);
 					result = utils.constructSucessJSON(jObj);
@@ -204,7 +204,7 @@ public class ViewerRestController {
 					viewer.setChatName(new Date().getTime() + "".trim());
 				     viewerService.createViewer(viewer);
 					UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(viewer.getUsername());
-					JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,false);
+					JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,null);
 					JSONObject jObj = new JSONObject();
 					jObj.put(IConstants.AUTH, authObj);
 					result = utils.constructSucessJSON(jObj);
@@ -253,7 +253,7 @@ public class ViewerRestController {
 						if(spotlightUser != null)
 							isBrodcast  = true;
 						UserDetails userDetails = viewerService.loadUserByUsername(byEmail.getUsername());
-						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,isBrodcast);
+						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser);
 						JSONObject jObj = new JSONObject();
 						jObj.put(IConstants.AUTH, authObj);
 						result = utils.constructSucessJSON(jObj);
@@ -263,7 +263,7 @@ public class ViewerRestController {
 						viewerService.createViewer(viewer);
 					//	Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
 						UserDetails userDetailsbyEmail =viewerService.loadUserByUsername(viewer.getUsername());
-						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,false);
+						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,null);
 						JSONObject jObj = new JSONObject();
 						jObj.put(IConstants.AUTH, authObj);
 						result = utils.constructSucessJSON(jObj);

@@ -224,7 +224,7 @@ public class SpotlightUserService implements ISpotlightUserService {
 				throw new AlreadyExistException("Session for the user already exists.");
 		}
 		
-		JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,true);
+		JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser.get());
 		
 		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
 		SpotlightUserSession spotlightUserSession = new SpotlightUserSession();

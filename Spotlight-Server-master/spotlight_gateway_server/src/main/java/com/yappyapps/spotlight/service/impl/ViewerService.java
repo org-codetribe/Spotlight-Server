@@ -241,8 +241,9 @@ public class ViewerService implements IViewerService {
 
         Optional<Viewer> viewer = viewerRepository.findById(((JwtViewer) userDetails).getId());
         boolean isBroadCasterExist = false;
+        SpotlightUser spotlightUser = null;
         if(viewer.isPresent()) {
-            SpotlightUser spotlightUser = spotlightUserRepository.findByEmail(viewer.get().getEmail());
+           spotlightUser = spotlightUserRepository.findByEmail(viewer.get().getEmail());
             if(spotlightUser != null)
                 isBroadCasterExist = true;
         }
@@ -270,7 +271,7 @@ public class ViewerService implements IViewerService {
 				throw new AlreadyExistException("Session for the viewer already exists.");
 
 		}*/
-        JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,isBroadCasterExist);
+        JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser);
 
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
         ViewerSession viewerSession = new ViewerSession();
