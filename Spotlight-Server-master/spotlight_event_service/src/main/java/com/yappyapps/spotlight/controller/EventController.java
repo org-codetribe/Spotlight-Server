@@ -49,7 +49,7 @@ import com.yappyapps.spotlight.util.Utils;
  */
 
 @RestController
-@RequestMapping(value = "1.0/event")
+	@RequestMapping(value = "1.0/event")
 public class EventController {
 	/**
 	 * Logger for the class.
@@ -140,7 +140,7 @@ public class EventController {
 			@RequestPart("eventImage") MultipartFile[] eventImage,
 			@RequestHeader("Content-Type") String contentType, @RequestHeader(value="Authorization", required=false) String token, RedirectAttributes redirectAttributes)
 			throws InvalidParameterException, AlreadyExistException, BusinessException {
-		String operation = "createEvent";
+	String operation = "createEvent";
 		LOGGER.info("EventController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
 				+ contentType + " :: eventImage length:: " + eventImage.length + " :: token :: " + token);
 		long startTime = System.currentTimeMillis();
@@ -148,7 +148,7 @@ public class EventController {
 		utils.isBodyJSONObject(requestBody);
 		JSONObject reqJSON = new JSONObject(requestBody);
 		
-		//Added the below checks as creating Object from JSON throws an error if they are not Integer.
+		//Added the below checks as creating ObjecliveStreamConfig = {LiveStreamConfig@13930} t from JSON throws an error if they are not Integer.
 		if(reqJSON.has("totalSeats") && reqJSON.get("totalSeats") != null)
 			utils.isInteger(reqJSON.get("totalSeats"), "Total Seats");
 		if(reqJSON.has("eventDuration") && reqJSON.get("eventDuration") != null)

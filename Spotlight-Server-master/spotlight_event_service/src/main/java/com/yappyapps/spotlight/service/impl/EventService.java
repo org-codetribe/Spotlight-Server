@@ -1,8 +1,10 @@
 package com.yappyapps.spotlight.service.impl;
 
+import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -235,10 +237,15 @@ public class EventService implements IEventService {
 				}
 
 				liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());
-				Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() - 2*60*1000);
-				Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 2*60*1000);
-				liveStream.setStartTranscoderDate(startTranscoderDate);
-				liveStream.setStopTranscoderDate(stopTranscoderDate);
+				//Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() - 2*60*1000);
+				//Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 2*60*1000);
+				//LocalDate date1 =  LocalDate.now().plusDays(2);
+				//LocalDate date2 =  date1.minusDays(1);
+				ZoneId defaultZoneId = ZoneId.systemDefault();
+				//Date startTranscoderDate = Date.from(date1.atStartOfDay(defaultZoneId).toInstant());
+				//Date stopTranscoderDate = Date.from(date2.atStartOfDay(defaultZoneId).toInstant());
+			//	liveStream.setStartTranscoderDate(startTranscoderDate);
+				//liveStream.setStopTranscoderDate(stopTranscoderDate);
 				try {
 //					wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
 				} catch (Exception e) {
@@ -268,10 +275,10 @@ public class EventService implements IEventService {
 				}
 				
 				liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());
-				Date startTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() - 5*60*1000);
-				Date stopTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() + eventEntity.getEventDuration() * 60 * 1000 + 5*60*1000);
-				liveStream.setStartTranscoderDate(startTranscoderDate);
-				liveStream.setStopTranscoderDate(stopTranscoderDate);
+				//Date startTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() - 5*60*1000);
+				//Date stopTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() + eventEntity.getEventDuration() * 60 * 1000 + 5*60*1000);
+				//liveStream.setStartTranscoderDate(startTranscoderDate);
+				//liveStream.setStopTranscoderDate(stopTranscoderDate);
 //				wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
 				wowzaJSONObject.getJSONObject("live_stream").put("schedule", wowzaScheduleResponse);
 
@@ -307,6 +314,9 @@ public class EventService implements IEventService {
 				LOGGER.error("ERROR in grantpermissions :::: " + e.getMessage());
 			}
 
+			eventEntity.setTimezone("PST");
+			Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+			eventEntity.setEventUtcDatetime(timestamp);
 			eventEntity = eventRepository.save(eventEntity);
 			if(commission != null) {
 				SpotlightCommission spotlightCommission = new SpotlightCommission();

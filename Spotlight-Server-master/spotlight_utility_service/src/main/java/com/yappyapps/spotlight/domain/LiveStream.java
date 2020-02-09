@@ -23,7 +23,8 @@ public class LiveStream {
 	private String playerType = "wowza";
 	private Integer playerWidth = 0;
 	private Boolean recording = false;
-	private String targetDeliveryProtocol = "hls_hds";
+	//private String targetDeliveryProtocol = "hls_hds";
+	private String targetDeliveryProtocol = "hls-https";
 	private String transcoderType = "transcoded";
 	private Boolean useStreamSource = false;
 	private String wowzaEventId = "";
@@ -344,7 +345,7 @@ public class LiveStream {
 		jObj.put("encoder", "wowza_streaming_engine");
 		jObj.put("name", name);
 		jObj.put("delivery_protocol", "hls");
-		jObj.put("target_delivery_protocol", "hls");
+		jObj.put("target_delivery_protocol", "hls-https");
 		jObj.put("player_responsive", true);
 		jObj.put("aspect_ratio_height", aspectRatioHeight);
 		jObj.put("aspect_ratio_width", aspectRatioWidth);

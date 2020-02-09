@@ -1,10 +1,13 @@
 package com.yappyapps.spotlight.controller;
 
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.Viewer;
 import com.yappyapps.spotlight.domain.helper.ViewerHelper;
 import com.yappyapps.spotlight.exception.*;
+import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
-import com.yappyapps.spotlight.util.JwtTokenUtil;
+import com.yappyapps.spotlight.service.IBroadcasterInfoService;
+import com.yappyapps.spotlight.util.*;
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -14,21 +17,15 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.gson.Gson;
 import com.yappyapps.spotlight.domain.SpotlightUser;
 import com.yappyapps.spotlight.service.ISpotlightUserService;
-import com.yappyapps.spotlight.util.IConstants;
-import com.yappyapps.spotlight.util.MeteringService;
-import com.yappyapps.spotlight.util.Utils;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * The SpotlightUserController class is the controller which will expose all the
@@ -48,11 +45,18 @@ public class SpotlightUserController {
      * Logger for the class.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(SpotlightUserController.class);
+    @Autowired
+    private ISpotlightUserRepository spotlightUserRepository;
 
     /**
      * Controller Name.
      */
     private static final String controller = "SpotlightUser";
+    private AmazonClient amazonClient;
+
+    public SpotlightUserController(AmazonClient amazonClient) {
+        this.amazonClient = amazonClient;
+    }
 
     /**
      * MeteringService dependency will be automatically injected.
@@ -67,6 +71,9 @@ public class SpotlightUserController {
      */
     @Autowired
     private ISpotlightUserService spotlightUserService;
+    @Autowired
+    private IBroadcasterInfoService broadcasterInfoService;
+
 
     /**
      * Gson dependency will be automatically injected.
@@ -103,11 +110,11 @@ public class SpotlightUserController {
      * @throws AlreadyExistException     AlreadyExistException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+    @RequestMapping(method = RequestMethod.POST, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String createSpotlightUser(@RequestBody String requestBody,
-                               @RequestHeader("Content-Type") String contentType, @RequestHeader(value = "Authorization", required = false) String authorization)
+    String createSpotlightUser(@RequestParam(value = "request") String requestBody,
+                               @RequestHeader("Content-Type") String contentType, @RequestPart(value = "bannerUrl",required = false) MultipartFile[] bannerUrl,@RequestPart(value = "image",required = false) MultipartFile[] image, @RequestHeader(value = "Authorization", required = false) String authorization)
             throws InvalidParameterException, AlreadyExistException, BusinessException {
         String operation = "createSpotlightUser";
         LOGGER.debug("SpotlightUserController :: " + operation + " :: RequestBody :: " + requestBody
@@ -115,21 +122,57 @@ public class SpotlightUserController {
         long startTime = System.currentTimeMillis();
         String result = "";
         utils.isBodyJSONObject(requestBody);
-        SpotlightUser spotlightUser = gson.fromJson(requestBody, SpotlightUser.class);
+         BroadcasterInfo broadcasterInfo = gson.fromJson(requestBody, BroadcasterInfo.class);
 
        // utils.isEmptyOrNull(spotlightUser.getEmail(), "Email");
        // utils.isEmailValid(spotlightUser.getEmail());
-        utils.isEmptyOrNull(spotlightUser.getName(), "Name");
-        utils.isEmptyOrNull(spotlightUser.getUserType(), "User Type");
-        utils.isUserTypeValid(spotlightUser.getUserType());
-        utils.isStatusValid(spotlightUser.getStatus());
+        utils.isEmptyOrNull(broadcasterInfo.getSpotlightUser().getName(), "Name");
+        utils.isEmptyOrNull(broadcasterInfo.getSpotlightUser().getUserType(), "User Type");
+        utils.isEmptyOrNull(broadcasterInfo.getShortDesc(), "shortDesc");
+        utils.isEmptyOrNull(broadcasterInfo.getBiography(), "biography");
+        utils.isUserTypeValid(broadcasterInfo.getSpotlightUser().getUserType());
+        utils.isStatusValid(broadcasterInfo.getSpotlightUser().getStatus());
+        if (null != bannerUrl && Arrays.asList(bannerUrl).size() > 0) {
+            Arrays.asList(bannerUrl).stream().map(file -> {
+                try {
+                    String url = this.amazonClient.uploadFile(file);
+                    broadcasterInfo.setBannerUrl(url);
+                    LOGGER.info("file URL :::: " + broadcasterInfo.getBannerUrl());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    LOGGER.error(e.getMessage());
+                }
+                return null;
+            }).collect(Collectors.toList());
+        }else{
+            broadcasterInfo.setBannerUrl("NO_IMAGE_FOUND");
+        }
+
+
+        if (null != image && Arrays.asList(image).size() > 0) {
+            Arrays.asList(image).stream().map(file -> {
+                try {
+                    String url_ = this.amazonClient.uploadFile(file);
+                    broadcasterInfo.getSpotlightUser().setProfileUrl(url_);
+                    LOGGER.info("file URL :::: " + broadcasterInfo.getSpotlightUser().getProfileUrl());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    LOGGER.error(e.getMessage());
+                }
+                return null;
+            }).collect(Collectors.toList());
+        }else {
+            broadcasterInfo.getSpotlightUser().setProfileUrl("NO_IMAGE_FOUND");
+        }
+
         try {
-            if (spotlightUser.getUserType().equalsIgnoreCase("BROADCASTER")) {
+            Viewer viewerEntity = null;
+            if (broadcasterInfo.getSpotlightUser().getUserType().equalsIgnoreCase("BROADCASTER")) {
                 if (authorization == null || !authorization.startsWith("Bearer "))
                     throw new SpotlightAuthenticationException("Client is not Authorized.");
                  String username = jwtTokenUtil.getUsernameFromToken(authorization.substring(7));
 
-                Viewer viewerEntity = null;
+
                 if (username.startsWith("_V")) {
                     username = username.substring(2);
                 }
@@ -156,13 +199,21 @@ public class SpotlightUserController {
 
 
                 String entityPassword = viewerEntity.getPassword();
-                spotlightUser.setPassword(entityPassword);
-                spotlightUser.setEmail(viewerEntity.getEmail());
-                spotlightUser.setUsername(viewerEntity.getUsername());
-                spotlightUser.setToken(authorization);
+                broadcasterInfo.getSpotlightUser().setPassword(entityPassword);
+                broadcasterInfo.getSpotlightUser().setEmail(viewerEntity.getEmail());
+                broadcasterInfo.getSpotlightUser().setUsername(viewerEntity.getUsername());
+                broadcasterInfo.getSpotlightUser().setToken(authorization);
+                broadcasterInfo.setDisplayName(broadcasterInfo.getSpotlightUser().getName());
+
 
             }
-            result = spotlightUserService.createSpotlightUser(spotlightUser);
+            //result = spotlightUserService.createSpotlightUser(broadcasterInfo.getSpotlightUser());
+            //SpotlightUser  byEmail = spotlightUserRepository.findByEmail(viewerEntity.getEmail());
+            //byEmail.setEmail(null);
+           // broadcasterInfo.setSpotlightUser(byEmail);
+             //BroadcasterInfo broadcasterInfo1 = gson.fromJson(result, BroadcasterInfo.class);
+           //  broadcasterInfo1.setDisplayName(b);
+            result = broadcasterInfoService.createBroadcasterInfo(broadcasterInfo);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
             throw e;

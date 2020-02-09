@@ -59,7 +59,6 @@ public class BroadcasterInfo {
 	private String shortDesc;
 
 	@Column(name = "BANNER_URL", columnDefinition = "Text")
-	@NotNull
 	private String bannerUrl;
 
 	@IndexedEmbedded
@@ -127,7 +126,7 @@ public class BroadcasterInfo {
 	 *            the biography to set
 	 */
 	public void setBiography(String biography) {
-		this.biography = biography;
+			this.biography = biography;
 	}
 
 	/**

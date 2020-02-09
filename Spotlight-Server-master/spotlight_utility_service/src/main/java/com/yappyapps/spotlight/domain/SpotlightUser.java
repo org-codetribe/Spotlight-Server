@@ -114,6 +114,11 @@ public class SpotlightUser {
 	@NotNull
 	private String status;
 
+	@Column(name = "PROFILE_URL", columnDefinition = "Text")
+	private String profileUrl;
+
+
+
 	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinTable(name = "ACCESS_ROLE_USER", joinColumns = {
 			@JoinColumn(name = "SPOTLIGHT_USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ACCESS_ROLE_ID") })
@@ -421,5 +426,13 @@ public class SpotlightUser {
 
 	public void setToken(String token) {
 		this.token = token;
+	}
+
+	public String getProfileUrl() {
+		return profileUrl;
+	}
+
+	public void setProfileUrl(String profileUrl) {
+		this.profileUrl = profileUrl;
 	}
 }
