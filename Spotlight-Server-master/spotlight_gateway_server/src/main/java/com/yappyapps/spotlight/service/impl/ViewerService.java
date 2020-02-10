@@ -3,7 +3,8 @@ package com.yappyapps.spotlight.service.impl;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-import com.yappyapps.spotlight.domain.SpotlightUser;
+import com.yappyapps.spotlight.domain.*;
+import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
 import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
@@ -21,9 +22,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.yappyapps.spotlight.domain.JwtViewer;
-import com.yappyapps.spotlight.domain.Viewer;
-import com.yappyapps.spotlight.domain.ViewerSession;
 import com.yappyapps.spotlight.domain.helper.ViewerHelper;
 import com.yappyapps.spotlight.exception.AccountDisabledException;
 import com.yappyapps.spotlight.exception.AlreadyExistException;
@@ -72,6 +70,8 @@ public class ViewerService implements IViewerService {
      */
     @Autowired
     private IViewerSessionRepository viewerSessionRepository;
+    @Autowired
+    private IBroadcasterInfoRepository broadcasterInfoRepository;
 
     /**
      * AuthenticationManager dependency will be automatically injected.
@@ -246,6 +246,10 @@ public class ViewerService implements IViewerService {
            spotlightUser = spotlightUserRepository.findByEmail(viewer.get().getEmail());
             if(spotlightUser != null)
                 isBroadCasterExist = true;
+            BroadcasterInfo broadcasterInfo = broadcasterInfoRepository.findBySpotlightUser(spotlightUser);
+            spotlightUser.setId(broadcasterInfo.getId());
+
+
         }
 
         //ViewerSession viewerSessionEntity = viewerSessionRepository.findByViewer(viewer.get());
