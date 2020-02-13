@@ -244,10 +244,11 @@ public class ViewerService implements IViewerService {
         SpotlightUser spotlightUser = null;
         if(viewer.isPresent()) {
            spotlightUser = spotlightUserRepository.findByEmail(viewer.get().getEmail());
-            if(spotlightUser != null)
+            if(spotlightUser != null) {
                 isBroadCasterExist = true;
-            BroadcasterInfo broadcasterInfo = broadcasterInfoRepository.findBySpotlightUser(spotlightUser);
-            spotlightUser.setId(broadcasterInfo.getId());
+                BroadcasterInfo broadcasterInfo = broadcasterInfoRepository.findBySpotlightUser(spotlightUser);
+                spotlightUser.setId(broadcasterInfo.getId());
+            }
 
 
         }
