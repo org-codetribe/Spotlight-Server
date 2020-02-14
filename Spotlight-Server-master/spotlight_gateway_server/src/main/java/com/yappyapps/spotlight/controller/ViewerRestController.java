@@ -3,7 +3,9 @@ package com.yappyapps.spotlight.controller;
 import javax.naming.AuthenticationNotSupportedException;
 import javax.servlet.http.HttpServletRequest;
 
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.SpotlightUser;
+import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
 import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
 import com.yappyapps.spotlight.service.ISpotlightUserService;
@@ -69,7 +71,8 @@ public class 	ViewerRestController {
 	 */
 	@Value("${jwt.header}")
 	private String tokenHeader;
-
+	@Autowired
+	private IBroadcasterInfoRepository broadcasterInfoRepository;
 	/**
 	 * JwtTokenUtil dependency will be automatically injected.
 	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
@@ -183,12 +186,15 @@ public class 	ViewerRestController {
 		try {
 			if(viewer.getSocialLoginType().equalsIgnoreCase("FB")) {
 				Viewer byEmailFB = iViewerRepository.findByEmail(viewer.getEmail());
-
 				if(byEmailFB != null){
 					SpotlightUser spotlightUser  = iSpotlightUserRepository.findByEmail(byEmailFB.getEmail());
 					Boolean isBrodcast = false;
-					if(spotlightUser != null)
+					if(spotlightUser != null){
 						isBrodcast  = true;
+						BroadcasterInfo broadcasterInfo = broadcasterInfoRepository.findBySpotlightUser(spotlightUser);
+						spotlightUser.setId(broadcasterInfo.getId());
+					}
+
 
 					UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(byEmailFB.getUsername());
 					JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,spotlightUser);
@@ -250,8 +256,11 @@ public class 	ViewerRestController {
 					if(byEmail != null){
 						SpotlightUser spotlightUser  = iSpotlightUserRepository.findByEmail(byEmail.getEmail());
 						Boolean isBrodcast = false;
-						if(spotlightUser != null)
-							isBrodcast  = true;
+						if(spotlightUser != null) {
+							isBrodcast = true;
+							BroadcasterInfo broadcasterInfo = broadcasterInfoRepository.findBySpotlightUser(spotlightUser);
+							spotlightUser.setId(broadcasterInfo.getId());
+						}
 						UserDetails userDetails = viewerService.loadUserByUsername(byEmail.getUsername());
 						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser);
 						JSONObject jObj = new JSONObject();
@@ -261,6 +270,8 @@ public class 	ViewerRestController {
 					}else{
 						viewer.setChatName(new Date().getTime() + "".trim());
 						viewerService.createViewer(viewer);
+
+
 					//	Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
 						UserDetails userDetailsbyEmail =viewerService.loadUserByUsername(viewer.getUsername());
 						JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail,null);
