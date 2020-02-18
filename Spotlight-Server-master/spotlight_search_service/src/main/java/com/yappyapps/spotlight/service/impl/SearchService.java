@@ -172,7 +172,7 @@ public class SearchService implements ISearchService {
         
         JSONObject jObj = new JSONObject();
 		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
 		
 		result = utils.constructSucessJSON(jObj);
 
@@ -308,7 +308,7 @@ public class SearchService implements ISearchService {
 
         JSONObject jObj = new JSONObject();
 		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
 		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
 		jObj.put(IConstants.CURRENT_PAGE, pageNum);
 		jObj.put(IConstants.CURRENT_PAGE_RECORDS, broadcasterInfoList.size());
@@ -519,7 +519,7 @@ public class SearchService implements ISearchService {
         }
         
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
 		
 		result = utils.constructSucessJSON(jObj);
 
@@ -590,7 +590,7 @@ public class SearchService implements ISearchService {
         }
         
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
 		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
 		jObj.put(IConstants.CURRENT_PAGE, pageNum);
 		jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());

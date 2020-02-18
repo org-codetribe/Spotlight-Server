@@ -345,5 +345,6 @@ public interface IViewerService {
 			String orderBy) throws ResourceNotFoundException, BusinessException, Exception;
 
 	public String updateViewerChatAccess(Viewer viewer, int eventId, String access, boolean accessFlag) throws ResourceNotFoundException, BusinessException, Exception;
+	public String manageFavoriteEventType(Favorite favoriteReqObj, Boolean favoriteFlag) throws InvalidParameterException, AlreadyExistException, BusinessException, Exception;
 
 }

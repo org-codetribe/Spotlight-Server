@@ -37,12 +37,15 @@ public class Favorite {
 	private Viewer viewer = null;
 
 	@ManyToOne
-	@JoinColumn(name = "broadcaster_info_id", nullable = false)
+	@JoinColumn(name = "broadcaster_info_id")
 	private BroadcasterInfo broadcasterInfo = null;
 
 	@ManyToOne
 	@JoinColumn(name = "event_id")
 	private Event event = null;
+	@ManyToOne
+	@JoinColumn(name = "event_type_id")
+	private EventType eventType = null;
 
 	@Column(name = "CREATED_ON", columnDefinition = "TimeStamp")
 	@NotNull
@@ -142,4 +145,11 @@ public class Favorite {
 		this.status = status;
 	}
 
+	public EventType getEventType() {
+		return eventType;
+	}
+
+	public void setEventType(EventType eventType) {
+		this.eventType = eventType;
+	}
 }

@@ -172,7 +172,7 @@ public class SearchController {
     public @ResponseBody
     String fuzzySearchBroadcasters(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
                                    @RequestParam(value = "offset", required = false) String offset,
-                                   @RequestParam(value = "viewerId", required = false) String viewerId,
+                                       @RequestParam(value = "viewerId", required = false) String viewerId,
                                    @RequestParam(value = "direction", required = false) String direction,
                                    @RequestParam(value = "orderBy", required = false) String orderBy)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {

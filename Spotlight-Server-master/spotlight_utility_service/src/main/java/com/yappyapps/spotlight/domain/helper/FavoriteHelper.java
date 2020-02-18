@@ -4,6 +4,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+import com.yappyapps.spotlight.domain.*;
+import com.yappyapps.spotlight.repository.IEventTypeRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,10 +14,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.domain.Event;
-import com.yappyapps.spotlight.domain.Favorite;
-import com.yappyapps.spotlight.domain.Viewer;
 import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
 import com.yappyapps.spotlight.repository.IEventRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
@@ -53,7 +51,10 @@ public class FavoriteHelper {
 	 */
 	@Autowired
 	private IEventRepository eventRepository;
-	
+	@Autowired
+	private IEventTypeRepository eventTypeRepository;
+
+
 	/**
 	 * This method is used to create the Favorite Entity by copying properties from
 	 * requested Bean
@@ -81,6 +82,12 @@ public class FavoriteHelper {
 				favoriteEntity.setEvent(eventEntity.get());
 		}
 
+
+		if(favoriteReqObj.getEventType() != null) {
+			Optional<EventType> eventEntity = eventTypeRepository.findById(favoriteReqObj.getEventType().getId());
+			if(eventEntity.isPresent())
+				favoriteEntity.setEventType(eventEntity.get());
+		}
 		if(favoriteReqObj.getViewer() != null) {
 			Optional<Viewer> viewerEntity = viewerRepository.findById(favoriteReqObj.getViewer().getId());
 			if(viewerEntity.isPresent())

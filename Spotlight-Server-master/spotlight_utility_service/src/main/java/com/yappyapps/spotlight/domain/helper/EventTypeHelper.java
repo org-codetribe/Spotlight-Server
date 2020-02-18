@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
+import com.yappyapps.spotlight.domain.Viewer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -126,6 +127,33 @@ public class EventTypeHelper {
 		return eventTypeObj;
 
 	}
+
+	public JSONObject buildResponseObjectForViwer(EventType eventType, Viewer viewer) throws JSONException {
+		JSONObject eventTypeObj = new JSONObject();
+		eventTypeObj.put("id", eventType.getId());
+		eventTypeObj.put("createdOn", eventType.getCreatedOn());
+		eventTypeObj.put("name", eventType.getName());
+		eventTypeObj.put("status", eventType.getStatus());
+		eventTypeObj.put("isCategory", eventType.getIsCategory());
+		eventTypeObj.put("eventTypeImage", eventType.getEventTypeBannerUrl());
+		if (eventType.getEventType() != null) {
+			eventTypeObj.put("eventType", new JSONObject().put("id",eventType.getEventType().getId()));
+		}
+
+		JSONArray childArr = new JSONArray();
+		List<EventType> childEventTypeList = eventTypeRepository.findByEventType(eventType);
+		for (EventType childEventType : childEventTypeList) {
+			childArr.put(buildResponseObject(childEventType));
+		}
+
+		if (childArr.length() > 0)
+			eventTypeObj.put(IConstants.CHILDREN, childArr);
+		LOGGER.debug("EventType Response Object built for EventType Object id :::: " + eventType.getId());
+		return eventTypeObj;
+
+	}
+
+
 
 	/**
 	 * This method is used to build the response object.

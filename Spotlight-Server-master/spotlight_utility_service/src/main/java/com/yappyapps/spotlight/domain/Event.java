@@ -83,6 +83,11 @@ public class Event {
 	@NotNull
 	private String eventImageUrl;
 
+
+	@Column(name = "event_video_url", columnDefinition = "Text")
+	@NotNull
+	private String eventVideoUrl;
+
 	@Column(name = "IS_TRENDING", length = 1)
 	@NotNull
 	private Boolean isTrending;
@@ -123,6 +128,8 @@ public class Event {
 	@Field(termVector = TermVector.YES)
 	@Column(name = "ADDRESS1", length = 255)
 	private String address1;
+
+	private transient  Boolean isFavourite;
 
 	@Field(termVector = TermVector.YES)
 	@Column(name = "ADDRESS2", length = 255)
@@ -654,5 +661,21 @@ public class Event {
 
 	public void setShowToPublic(Integer showToPublic) {
 		this.showToPublic = showToPublic;
+	}
+
+	public String getEventVideoUrl() {
+		return eventVideoUrl;
+	}
+
+	public void setEventVideoUrl(String eventVideoUrl) {
+		this.eventVideoUrl = eventVideoUrl;
+	}
+
+	public Boolean getFavourite() {
+		return isFavourite;
+	}
+
+	public void setFavourite(Boolean favourite) {
+		isFavourite = favourite;
 	}
 }

@@ -831,4 +831,122 @@ public class ViewerController {
         return result;
     }
 
+
+
+
+
+
+
+
+
+
+
+    /**
+     * This method is used to expose the REST API as POST to mark Event as Favorite.
+     *
+     * @param requestBody:  Request Body in JSON Format.
+     * @param favoriteFlag: String
+     * @param contentType:  "application/json"
+     * @return ResponseBody: Response in JSON format.
+     * @throws InvalidParameterException InvalidParameterException
+     * @throws AlreadyExistException     AlreadyExistException
+     * @throws BusinessException         BusinessException
+     */
+    @RequestMapping(value = "/favorite/event-type/{favoriteFlag}", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+            MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String manageFavoriteEventType(@RequestBody String requestBody, @PathVariable("favoriteFlag") String favoriteFlag,
+                               @RequestHeader("Content-Type") String contentType)
+            throws InvalidParameterException, AlreadyExistException, BusinessException {
+        String operation = "manageFavoriteEventType";
+        LOGGER.debug("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: favoriteFlag :: " + favoriteFlag + " :: contentType :: "
+                + contentType);
+        long startTime = System.currentTimeMillis();
+        String result = "";
+        utils.isBodyJSONObject(requestBody);
+        Favorite favorite = gson.fromJson(requestBody, Favorite.class);
+
+        utils.isEmptyOrNull(favorite.getEventType(), "EventType");
+        utils.isEmptyOrNull(favorite.getEventType().getId(), "EventTypeId Id");
+        utils.isIntegerGreaterThanZero(favorite.getEventType().getId(), "EventType Id");
+
+        utils.isEmptyOrNull(favorite.getEvent(), "Event");
+        utils.isEmptyOrNull(favorite.getEvent().getId(), "Event Id");
+        utils.isIntegerGreaterThanZero(favorite.getEvent().getId(), "Event Id");
+        utils.isEmptyOrNull(favorite.getViewer(), "Viewer");
+        utils.isEmptyOrNull(favorite.getViewer().getId(), "Viewer Id");
+        utils.isIntegerGreaterThanZero(favorite.getViewer().getId(), "Viewer Id");
+        utils.isEmptyOrNull(favoriteFlag, "favoriteFlag");
+        try {
+            result = viewerService.manageFavoriteEventType(favorite, Boolean.valueOf(favoriteFlag));
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (AlreadyExistException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime),
+                    requestBody.length());
+        }
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/favorite/broadcaster/event/{favoriteFlag}", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+            MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String manageFavoriteBroadcasterWithEvent(@RequestBody String requestBody, @PathVariable("favoriteFlag") String favoriteFlag,
+                                     @RequestHeader("Content-Type") String contentType)
+            throws InvalidParameterException, AlreadyExistException, BusinessException {
+        String operation = "manageFavoriteBroadcaster";
+        LOGGER.debug("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: favoriteFlag :: " + favoriteFlag + " :: contentType :: "
+                + contentType);
+        long startTime = System.currentTimeMillis();
+        String result = "";
+        utils.isBodyJSONObject(requestBody);
+        Favorite favorite = gson.fromJson(requestBody, Favorite.class);
+        utils.isEmptyOrNull(favorite.getEvent(), "Event");
+        utils.isEmptyOrNull(favorite.getEvent().getId(), "Event Id");
+        utils.isIntegerGreaterThanZero(favorite.getEvent().getId(), "Event Id");
+        utils.isEmptyOrNull(favorite.getBroadcasterInfo(), "Broadcaster");
+        utils.isEmptyOrNull(favorite.getBroadcasterInfo().getId(), "Broadcaster Id");
+        utils.isIntegerGreaterThanZero(favorite.getBroadcasterInfo().getId(), "Broadcaster Id");
+        utils.isEmptyOrNull(favorite.getViewer(), "Viewer");
+        utils.isEmptyOrNull(favorite.getViewer().getId(), "Viewer Id");
+        utils.isIntegerGreaterThanZero(favorite.getViewer().getId(), "Viewer Id");
+        utils.isEmptyOrNull(favoriteFlag, "favoriteFlag");
+
+        try {
+            result = viewerService.manageFavoriteBroadcaster(favorite, Boolean.valueOf(favoriteFlag));
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (AlreadyExistException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime),
+                    requestBody.length());
+        }
+
+        return result;
+    }
+
+
+
+
 }

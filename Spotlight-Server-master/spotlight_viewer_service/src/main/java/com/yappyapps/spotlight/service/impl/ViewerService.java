@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.yappyapps.spotlight.domain.*;
+import com.yappyapps.spotlight.repository.*;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONObject;
@@ -22,11 +24,6 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.domain.Event;
-import com.yappyapps.spotlight.domain.Favorite;
-import com.yappyapps.spotlight.domain.Viewer;
-import com.yappyapps.spotlight.domain.ViewerEvent;
 import com.yappyapps.spotlight.domain.helper.BroadcasterInfoHelper;
 import com.yappyapps.spotlight.domain.helper.EventHelper;
 import com.yappyapps.spotlight.domain.helper.FavoriteHelper;
@@ -35,12 +32,6 @@ import com.yappyapps.spotlight.exception.AlreadyExistException;
 import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.InvalidParameterException;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
-import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
-import com.yappyapps.spotlight.repository.IEventRepository;
-import com.yappyapps.spotlight.repository.IFavoriteRepository;
-import com.yappyapps.spotlight.repository.IViewerEventRepository;
-import com.yappyapps.spotlight.repository.IViewerRepository;
-import com.yappyapps.spotlight.repository.IViewerSessionRepository;
 import com.yappyapps.spotlight.service.IEmailNotificationService;
 import com.yappyapps.spotlight.service.IViewerService;
 import com.yappyapps.spotlight.util.IConstants;
@@ -89,6 +80,9 @@ public class ViewerService implements IViewerService {
 	 */
 	@Autowired
 	private IEventRepository eventRepository;
+
+	@Autowired
+	private IEventTypeRepository eventTypeRepository;
 
 	/**
 	 * IBroadcasterInfoRepository dependency will be automatically injected.
@@ -235,8 +229,8 @@ public class ViewerService implements IViewerService {
 	 */
 	public String manageFavoriteBroadcaster(Favorite favoriteReqObj, Boolean favoriteFlag) throws InvalidParameterException, AlreadyExistException, BusinessException, Exception {
 		String result = null;
-		
-		
+
+
 
 		try {
 			favoriteReqObj = favoriteHelper.populateFavorite(favoriteReqObj);
@@ -639,7 +633,7 @@ public class ViewerService implements IViewerService {
 			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 		}
 		JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get()));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get(),null));
 
 		result = utils.constructSucessJSON(jObj);
 
@@ -713,7 +707,7 @@ public class ViewerService implements IViewerService {
 		}
 
 		JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get()));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get(),null));
 		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
 		jObj.put(IConstants.CURRENT_PAGE, pageNum);
 		jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -766,7 +760,7 @@ public class ViewerService implements IViewerService {
 			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 		}
 		JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get()));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get(),null));
 
 		result = utils.constructSucessJSON(jObj);
 
@@ -840,7 +834,7 @@ public class ViewerService implements IViewerService {
 		}
 
 		JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get()));
+		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.get(),null));
 		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
 		jObj.put(IConstants.CURRENT_PAGE, pageNum);
 		jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1067,5 +1061,53 @@ public class ViewerService implements IViewerService {
 
 		return result;
 	}
+
+
+	public String manageFavoriteEventType(Favorite favoriteReqObj, Boolean favoriteFlag) throws InvalidParameterException, AlreadyExistException, BusinessException, Exception {
+		String result = null;
+		try {
+			favoriteReqObj = favoriteHelper.populateFavorite(favoriteReqObj);
+
+			Optional<EventType> eventTypeEntity = eventTypeRepository.findById(favoriteReqObj.getEventType().getId());
+			if(!eventTypeEntity.isPresent())
+				throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+			Optional<Viewer> viewerEntity = viewerRepository.findById(favoriteReqObj.getViewer().getId());
+			if(!viewerEntity.isPresent())
+				throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+			Optional<Event> eventEntity = eventRepository.findById(favoriteReqObj.getEvent().getId());
+			if(!eventEntity.isPresent())
+				throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+			/*if(favoriteReqObj.getBroadcasterInfo() == null) {
+				favoriteReqObj.setBroadcasterInfo(eventEntity.get().getBroadcasterInfo());
+			} else {
+				utils.isEmptyOrNull(favoriteReqObj.getBroadcasterInfo().getId(), "BroadcasterId");
+				utils.isIntegerGreaterThanZero(favoriteReqObj.getBroadcasterInfo().getId(), "BroadcasterId");
+			}*/
+
+			if(favoriteFlag) {
+				if(favoriteRepository.findByEventAndEventTypeAndViewer(favoriteReqObj.getEvent(),favoriteReqObj.getEventType(), favoriteReqObj.getViewer()) != null )
+					throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
+				favoriteReqObj = favoriteRepository.save(favoriteReqObj);
+			} else {
+				Favorite favoriteEntity = favoriteRepository.findByEventAndEventTypeAndViewer(favoriteReqObj.getEvent(),favoriteReqObj.getEventType(), favoriteReqObj.getViewer());
+				if(favoriteEntity == null)
+					throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+				favoriteRepository.delete(favoriteEntity);
+			}
+		} catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+			throw new Exception(sqlException.getMessage());
+		} catch (HibernateException | JpaSystemException sqlException) {
+			throw new Exception(sqlException.getMessage());
+		}
+
+		JSONObject jObj = new JSONObject();
+		result = utils.constructSucessJSON(jObj);
+
+		return result;
+	}
+
 
 }

@@ -133,6 +133,8 @@ public interface IEventService {
 	public String getAllEvents(Integer eventTypeId, Integer limit, Integer offset, String direction, String orderBy)
 			throws ResourceNotFoundException, BusinessException, Exception;
 
+	public String getAllEventsWithViewer(Integer limit, Integer offset, String direction, String orderBy,Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
+
 	/**
 	 * This method is used to get all Events by EventType Name with paging.
 	 * 
@@ -613,6 +615,8 @@ public interface IEventService {
 			throws ResourceNotFoundException, BusinessException, Exception;
 
 	public String testDate(Event eventReqObj) throws ResourceNotFoundException, BusinessException, Exception;
+
+	public String getAllEvents(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
 
 }

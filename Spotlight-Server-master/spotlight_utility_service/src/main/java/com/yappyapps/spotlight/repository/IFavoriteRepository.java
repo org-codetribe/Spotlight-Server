@@ -2,15 +2,11 @@ package com.yappyapps.spotlight.repository;
 
 import java.util.List;
 
+import com.yappyapps.spotlight.domain.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
-
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.domain.Event;
-import com.yappyapps.spotlight.domain.Favorite;
-import com.yappyapps.spotlight.domain.Viewer;
 
 /**
  * The IFavoriteRepository interface provides the CRUD operations on Favorite domain
@@ -72,6 +68,8 @@ public interface IFavoriteRepository extends CrudRepository<Favorite, Integer> {
 	 * @return Favorite;
 	 */
 	Favorite findByBroadcasterInfoAndEventAndViewer(BroadcasterInfo broadcasterInfo, Event event, Viewer viewer);
+
+	Favorite findByEventAndEventTypeAndViewer(Event event ,EventType eventType, Viewer viewer);
 
 	/**
 	 * This method is used to find Favorite by Viewer.

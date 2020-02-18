@@ -146,6 +146,7 @@ public class EventHelper {
 		eventEntity.setLiveStreamUrl(eventReqObj.getLiveStreamUrl() != null ? eventReqObj.getLiveStreamUrl() : "defaultURL");
 		eventEntity.setDescription(eventReqObj.getDescription() != null ? eventReqObj.getDescription() : null);
 		eventEntity.setEventImageUrl(eventReqObj.getEventImageUrl() != null ? eventReqObj.getEventImageUrl() : null);
+		eventEntity.setEventVideoUrl(eventReqObj.getEventVideoUrl() != null ? eventReqObj.getEventVideoUrl() : null);
 		eventEntity.setIsTrending(eventReqObj.getIsTrending() != null ? eventReqObj.getIsTrending() : false);
 		eventEntity.setChatEnabled(eventReqObj.getChatEnabled() != null ? eventReqObj.getChatEnabled() : false);
 		eventEntity.setEventUtcDatetime(eventReqObj.getEventUtcDatetime() != null ? eventReqObj.getEventUtcDatetime() : null);
@@ -299,7 +300,7 @@ public class EventHelper {
 	 * @return JSONObject: eventObj
 	 * 
 	 */
-	public JSONObject buildResponseObject(Event event, Viewer viewer, boolean deepEventTypeFlag) throws JSONException {
+	public JSONObject buildResponseObject(Event event, Viewer viewer, boolean deepEventTypeFlag,EventType eventType_) throws JSONException {
 		JSONObject eventObj = new JSONObject();
 		eventObj.put("id", event.getId());
 		eventObj.put("actualPrice", event.getActualPrice());
@@ -312,6 +313,7 @@ public class EventHelper {
 		eventObj.put("liveStreamUrl", event.getLiveStreamUrl());
 		eventObj.put("description", event.getDescription());
 		eventObj.put("eventImageUrl", event.getEventImageUrl());
+		eventObj.put("eventVideoUrl", event.getEventVideoUrl());
 		eventObj.put("isTrending", event.getIsTrending());
 		eventObj.put("chatEnabled", event.getChatEnabled());
 		eventObj.put("eventUtcDatetime", event.getEventUtcDatetime());
@@ -348,6 +350,17 @@ public class EventHelper {
 						eventObj.put("isFavorite", true);
 					} else {
 						eventObj.put("isFavorite", false);
+					}
+				}
+			}
+
+			if(eventType_ != null && eventType_.getId() != null) {
+				Favorite favoriteEntity_ = favoriteRepository.findByEventAndEventTypeAndViewer(event,eventType_,viewer);
+				if(favoriteEntity_ != null) {
+					if(favoriteEntity_.getEventType().getId() == eventType_.getId()) {
+						eventObj.put("isFavoriteEventType", true);
+					} else {
+						eventObj.put("isFavoriteEventType", false);
 					}
 				}
 			}
@@ -424,6 +437,7 @@ public class EventHelper {
 		eventObj.put("liveStreamUrl", event.getLiveStreamUrl());
 		eventObj.put("description", event.getDescription());
 		eventObj.put("eventImageUrl", event.getEventImageUrl());
+		eventObj.put("eventVideoUrl", event.getEventVideoUrl());
 		eventObj.put("isTrending", event.getIsTrending());
 		eventObj.put("chatEnabled", event.getChatEnabled());
 		eventObj.put("eventUtcDatetime", event.getEventUtcDatetime());
@@ -548,6 +562,7 @@ public class EventHelper {
 		eventObj.put("liveStreamUrl", event.getLiveStreamUrl());
 		eventObj.put("description", event.getDescription());
 		eventObj.put("eventImageUrl", event.getEventImageUrl());
+		eventObj.put("eventVideoUrl", event.getEventVideoUrl());
 		eventObj.put("isTrending", event.getIsTrending());
 		eventObj.put("chatEnabled", event.getChatEnabled());
 		eventObj.put("eventUtcDatetime", event.getEventUtcDatetime());
@@ -672,6 +687,7 @@ public class EventHelper {
 		eventObj.put("liveStreamUrl", event.getLiveStreamUrl());
 		eventObj.put("description", event.getDescription());
 		eventObj.put("eventImageUrl", event.getEventImageUrl());
+		eventObj.put("eventVideoUrl", event.getEventVideoUrl());
 		eventObj.put("isTrending", event.getIsTrending());
 		eventObj.put("chatEnabled", event.getChatEnabled());
 		eventObj.put("eventUtcDatetime", event.getEventUtcDatetime());
@@ -798,10 +814,10 @@ public class EventHelper {
 	 * @return JSONArray: eventArr
 	 * 
 	 */
-	public JSONArray buildResponseObject(List<Event> eventList, Viewer viewer) throws JSONException {
+	public JSONArray buildResponseObject(List<Event> eventList, Viewer viewer,EventType eventType) throws JSONException {
 		JSONArray eventArr = new JSONArray();
 		for (Event event : eventList) {
-			JSONObject eventObj = buildResponseObject(event, viewer, true);
+			JSONObject eventObj = buildResponseObject(event, viewer, true,eventType);
 			if (eventObj != null)
 				eventArr.put(eventObj);
 
