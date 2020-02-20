@@ -344,23 +344,12 @@ public class EventHelper {
 				eventObj.put("broadcasterInfo", broadcasterInfoHelper.buildResponseObject(broadcasterInfoEntity.get(), viewer, false));
 
 			if(viewer != null && viewer.getId() != null) {
-				Favorite favoriteEntity = favoriteRepository.findByBroadcasterInfoAndEventAndViewer(broadcasterInfoEntity.get(), event, viewer);
-				if(favoriteEntity != null) {
-					if(favoriteEntity.getEvent().getId() == event.getId()) {
+				List<Favorite> favoriteEntity = favoriteRepository.findByEventAndViewer(event, viewer);
+				if(favoriteEntity != null && favoriteEntity.size() > 0) {
+					if (favoriteEntity.get(0).getEvent().getId() == event.getId()) {
 						eventObj.put("isFavorite", true);
 					} else {
 						eventObj.put("isFavorite", false);
-					}
-				}
-			}
-
-			if(eventType_ != null && eventType_.getId() != null) {
-				Favorite favoriteEntity_ = favoriteRepository.findByEventAndEventTypeAndViewer(event,eventType_,viewer);
-				if(favoriteEntity_ != null) {
-					if(favoriteEntity_.getEventType().getId() == eventType_.getId()) {
-						eventObj.put("isFavoriteEventType", true);
-					} else {
-						eventObj.put("isFavoriteEventType", false);
 					}
 				}
 			}

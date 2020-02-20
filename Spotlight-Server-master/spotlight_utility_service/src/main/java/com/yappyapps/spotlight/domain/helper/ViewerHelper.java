@@ -87,6 +87,7 @@ public class ViewerHelper {
 		viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : viewerEntity.getLname());
 		viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : viewerEntity.getPhone());
 		viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : viewerEntity.getEmail());
+		viewerEntity.setProfilePicture(viewerReqObj.getProfilePicture() != null ? viewerReqObj.getProfilePicture() : viewerEntity.getProfilePicture());
 		viewerEntity.setPassword(viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword())
 				: viewerEntity.getPassword());
 		viewerEntity.setUpdatedOn(updatedTime);
@@ -120,6 +121,7 @@ public class ViewerHelper {
 		viewerObj.put("uniqueName", viewer.getUniqueName());
 		viewerObj.put("updatedOn", viewer.getUpdatedOn());
 		viewerObj.put("username", viewer.getUsername());
+		viewerObj.put("profilePicture", viewer.getProfilePicture());
 		viewerObj.put("chatName", viewer.getChatName());
 
 		LOGGER.debug("Viewer Response Object built for Viewer Object id :::: " + viewer.getId());

@@ -91,4 +91,7 @@ public interface IFavoriteRepository extends CrudRepository<Favorite, Integer> {
 	 */
 	Page<Favorite> findByViewer(Viewer viewer, Pageable pageable);
 
+	Favorite findByViewerAndEventTypeIsNull(Viewer viewer);
+
+	List<Favorite> findByEventAndViewer(Event event, Viewer viewer);
 }

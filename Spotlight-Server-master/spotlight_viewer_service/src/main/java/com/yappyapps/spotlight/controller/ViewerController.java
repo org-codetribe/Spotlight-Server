@@ -1,18 +1,12 @@
 package com.yappyapps.spotlight.controller;
 
+import com.yappyapps.spotlight.util.AmazonClient;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.gson.Gson;
 import com.yappyapps.spotlight.domain.Favorite;
@@ -25,8 +19,11 @@ import com.yappyapps.spotlight.service.IViewerService;
 import com.yappyapps.spotlight.util.IConstants;
 import com.yappyapps.spotlight.util.MeteringService;
 import com.yappyapps.spotlight.util.Utils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Collectors;
 
 /**
  * The ViewerController class is the controller which will expose all the
@@ -79,6 +76,12 @@ public class ViewerController {
      */
     @Autowired
     private Utils utils;
+
+    private AmazonClient amazonClient;
+
+    public ViewerController(AmazonClient amazonClient) {
+        this.amazonClient = amazonClient;
+    }
 
     /**
      * This method is used to expose the REST API as POST to create Viewer.
@@ -617,11 +620,11 @@ public class ViewerController {
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+    @RequestMapping(method = RequestMethod.PUT, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String updateViewer(@RequestBody String requestBody,
-                        @RequestHeader("Content-Type") String contentType)
+    String updateViewer(@RequestParam(value = "request") String requestBody,
+                        @RequestHeader("Content-Type") String contentType, @RequestPart(value = "profilePicture" , required = false) MultipartFile[] image)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateViewer";
         LOGGER.info("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
@@ -632,9 +635,24 @@ public class ViewerController {
         Viewer viewer = gson.fromJson(requestBody, Viewer.class);
         utils.isEmptyOrNull(viewer.getId(), "id");
         utils.isIntegerGreaterThanZero(viewer.getId(), "id");
-        // utils.isEmptyOrNull(viewer.getEmail(), "Email");
-        utils.isAvailableObjectEmpty(viewer.getChatName(), "Chat Name");
+        //utils.isEmptyOrNull(viewer.getEmail(), "Email");
+        //viewer.setChatName(new Date().getTime() + "".trim());
+        //utils.isAvailableObjectEmpty(viewer.getChatName(), "Chat Name");
         try {
+
+            if (null != image && Arrays.asList(image).size() > 0) {
+                Arrays.asList(image).stream().map(file -> {
+                    try {
+                        LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
+                        String url = this.amazonClient.uploadFile(file);
+                        viewer.setProfilePicture(url);
+                        LOGGER.info("file URL :::: " + viewer.getProfilePicture());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+            }
             result = viewerService.updateViewer(viewer);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());

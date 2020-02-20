@@ -413,18 +413,25 @@ public class EventService implements IEventService {
         String result = null;
 
         List<Event> eventList = null;
-        Optional<Viewer> viewerEntity;
-        Optional<EventType> eventTypeEntity;
+        Optional<Viewer> viewerEntity = null;
+        Optional<EventType> eventTypeEntity = null;
         try {
-            eventTypeEntity = eventTypeRepository.findById(eventTypeId);
-            if (!eventTypeEntity.isPresent())
-                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            if(eventTypeId != null) {
+                eventTypeEntity = eventTypeRepository.findById(eventTypeId);
+                if (!eventTypeEntity.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            if(viewerId != null) {
+                viewerEntity = viewerRepository.findById(viewerId);
+                if (!viewerEntity.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
 
-            viewerEntity = viewerRepository.findById(viewerId);
-            if (!viewerEntity.isPresent())
-                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
+            if(eventTypeEntity != null)
             eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
+            else
+                eventList = (List<Event>) eventRepository.findAll();
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -436,7 +443,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity.isPresent() ? viewerEntity.get() : null,eventTypeEntity.isPresent() ? eventTypeEntity.get() : null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity!=null ? viewerEntity.get() : null,eventTypeEntity!=null? eventTypeEntity.get() : null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -541,20 +548,26 @@ public class EventService implements IEventService {
 
 
     @Override
-    public String getAllEventsWithViewer(Integer limit, Integer offset, String direction, String orderBy, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception {
+    public String getAllEventsWithViewer(Integer limit, Integer offset, String direction, String orderBy, Integer viewerId,Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception {
         String result = null;
         long totalCount = 0;
 
         List<Event> eventList = new ArrayList<Event>();
         int pageNum = offset / limit;
         Optional<Viewer> viewer = null;
+        Optional<EventType> eventType = null;
         try {
-
             if (viewerId != null) {
                 viewer = viewerRepository.findById(viewerId);
                 if (!viewer.isPresent())
                     throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
+            if (eventTypeId != null) {
+                eventType = eventTypeRepository.findById(viewerId);
+                if (!eventType.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+
             Direction directionObj = (direction != null ? Direction.valueOf(direction) : Direction.valueOf("ASC"));
             orderBy = (orderBy != null ? orderBy : "id");
             Pageable pageableRequest = PageRequest.of(pageNum, limit, directionObj, orderBy);
@@ -577,7 +590,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewer.isPresent() ? viewer.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewer.isPresent() ? viewer.get() : null,eventType.isPresent() ? eventType.get() : null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -588,6 +601,7 @@ public class EventService implements IEventService {
         return result;
 
     }
+
 
 
     /**

@@ -240,7 +240,7 @@ public class EventController {
      */
     @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String getAllEventsByEventType(@RequestParam(value = "eventTypeId", required = false) String eventTypeId, @RequestParam(value = "viewerId", required = false) String viewerId,
+    String getAllEventsByEventType(@RequestParam(value = "eventTypeId", required = false) String eventTypeId, @RequestParam(value = "viewerId", required = false) String viewerId,@RequestParam(value = "brodcasterId", required = false) String brodcasterId,
                                    @RequestParam(value = "limit", required = false) String limit,
                                    @RequestParam(value = "offset", required = false) String offset,
                                    @RequestParam(value = "direction", required = false) String direction,
@@ -260,7 +260,9 @@ public class EventController {
                 if (eventTypeId != null && viewerId == null) {
                     result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 } else if (eventTypeId != null && viewerId != null) {
-                    result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId));
+                    result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId),Integer.valueOf(eventTypeId));
+                } else if (eventTypeId == null && viewerId != null) {
+                    result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId),null);
                 } else {
                     result = eventService.getAllEvents(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 }
@@ -269,7 +271,10 @@ public class EventController {
                     result = eventService.getAllEvents(Integer.valueOf(eventTypeId));
                 } else if (eventTypeId != null && viewerId != null) {
                     result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
-                } else {
+                }
+                else if (eventTypeId == null && viewerId != null) {
+                    result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
+                }else {
                     result = eventService.getAllEvents();
                 }
             }
@@ -290,6 +295,13 @@ public class EventController {
         }
         return result;
     }
+
+
+
+
+
+
+
 
     /**
      * This method is used to expose the REST API as GET to get all Events by EventType Name with
@@ -593,7 +605,6 @@ public class EventController {
      * Broadcaster User with paging and orderBy.
      *
      * @param broadcasterId: String
-     * @param viewerId:      String
      * @param limit:         String
      * @param offset:        String
      * @param direction:     String
