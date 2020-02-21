@@ -538,11 +538,11 @@ public class SpotlightUserController {
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(value = "/profile", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+    @RequestMapping(value = "/profile", method = RequestMethod.PUT, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String updateSpotlightUserProfile(@RequestBody String requestBody,
-                                      @RequestHeader("Content-Type") String contentType)
+    String updateSpotlightUserProfile(@RequestParam("request") String requestBody,
+                                      @RequestHeader("Content-Type") String contentType,@RequestPart(value = "profilePicture", required = false) MultipartFile[] image)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateSpotlightUserProfile";
         LOGGER.info("SpotlightUserController :: " + operation + " :: RequestBody :: " + requestBody
@@ -553,9 +553,24 @@ public class SpotlightUserController {
         SpotlightUser spotlightUser = gson.fromJson(requestBody, SpotlightUser.class);
         utils.isEmptyOrNull(spotlightUser.getId(), "id");
         utils.isIntegerGreaterThanZero(spotlightUser.getId(), "id");
-        utils.isAvailableObjectEmpty(spotlightUser.getName(), "Name");
+       // utils.isAvailableObjectEmpty(spotlightUser.getName(), "Name");
         // utils.isEmptyOrNull(spotlightUser.getEmail(), "Email");
         try {
+
+            if (null != image && Arrays.asList(image).size() > 0) {
+                Arrays.asList(image).stream().map(file -> {
+                    try {
+                        LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
+                        String url = this.amazonClient.uploadFile(file);
+                        spotlightUser.setProfileUrl(url);
+                        LOGGER.info("file URL :::: " + spotlightUser.getProfileUrl());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+            }
+
             result = spotlightUserService.updateSpotlightUser(spotlightUser);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());

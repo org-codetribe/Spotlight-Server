@@ -623,8 +623,7 @@ public class ViewerController {
     @RequestMapping(method = RequestMethod.PUT, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String updateViewer(@RequestParam(value = "request") String requestBody,
-                        @RequestHeader("Content-Type") String contentType, @RequestPart(value = "profilePicture" , required = false) MultipartFile[] image)
+    String updateViewer(@RequestParam("request") String requestBody, @RequestHeader("Content-Type") String contentType, @RequestPart(value = "profilePicture", required = false) MultipartFile[] image)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateViewer";
         LOGGER.info("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
@@ -725,11 +724,11 @@ public class ViewerController {
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(value = "/profile", method = RequestMethod.PUT, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+    @RequestMapping(value = "/profile", method = RequestMethod.PUT, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String updateViewerProfile(@RequestBody String requestBody,
-                               @RequestHeader("Content-Type") String contentType)
+    String updateViewerProfile(@RequestParam(value = "request",required = false) String requestBody,
+                               @RequestHeader("Content-Type") String contentType,@RequestPart(value = "profilePicture", required = false) MultipartFile[] image)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateViewerProfile";
         LOGGER.info("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
@@ -740,9 +739,24 @@ public class ViewerController {
         Viewer viewer = gson.fromJson(requestBody, Viewer.class);
         utils.isEmptyOrNull(viewer.getId(), "id");
         utils.isIntegerGreaterThanZero(viewer.getId(), "id");
-        utils.isAvailableObjectEmpty(viewer.getChatName(), "Chat Name");
+        //utils.isAvailableObjectEmpty(viewer.getChatName(), "Chat Name");
         // utils.isEmptyOrNull(viewer.getEmail(), "Email");
         try {
+
+            if (null != image && Arrays.asList(image).size() > 0) {
+                Arrays.asList(image).stream().map(file -> {
+                    try {
+                        LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
+                        String url = this.amazonClient.uploadFile(file);
+                        viewer.setProfilePicture(url);
+                        LOGGER.info("file URL :::: " + viewer.getProfilePicture());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+            }
+
             result = viewerService.updateViewer(viewer);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
@@ -850,15 +864,6 @@ public class ViewerController {
     }
 
 
-
-
-
-
-
-
-
-
-
     /**
      * This method is used to expose the REST API as POST to mark Event as Favorite.
      *
@@ -874,7 +879,7 @@ public class ViewerController {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String manageFavoriteEventType(@RequestBody String requestBody, @PathVariable("favoriteFlag") String favoriteFlag,
-                               @RequestHeader("Content-Type") String contentType)
+                                   @RequestHeader("Content-Type") String contentType)
             throws InvalidParameterException, AlreadyExistException, BusinessException {
         String operation = "manageFavoriteEventType";
         LOGGER.debug("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: favoriteFlag :: " + favoriteFlag + " :: contentType :: "
@@ -922,7 +927,7 @@ public class ViewerController {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String manageFavoriteBroadcasterWithEvent(@RequestBody String requestBody, @PathVariable("favoriteFlag") String favoriteFlag,
-                                     @RequestHeader("Content-Type") String contentType)
+                                              @RequestHeader("Content-Type") String contentType)
             throws InvalidParameterException, AlreadyExistException, BusinessException {
         String operation = "manageFavoriteBroadcaster";
         LOGGER.debug("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: favoriteFlag :: " + favoriteFlag + " :: contentType :: "
@@ -963,8 +968,6 @@ public class ViewerController {
 
         return result;
     }
-
-
 
 
 }
