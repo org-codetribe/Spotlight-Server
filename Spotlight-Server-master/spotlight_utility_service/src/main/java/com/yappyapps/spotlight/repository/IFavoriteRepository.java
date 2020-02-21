@@ -93,5 +93,5 @@ public interface IFavoriteRepository extends CrudRepository<Favorite, Integer> {
 
 	Favorite findByViewerAndEventTypeIsNull(Viewer viewer);
 
-	List<Favorite> findByEventAndViewer(Event event, Viewer viewer);
+	Favorite findByEventAndViewer(Event event, Viewer viewer);
 }

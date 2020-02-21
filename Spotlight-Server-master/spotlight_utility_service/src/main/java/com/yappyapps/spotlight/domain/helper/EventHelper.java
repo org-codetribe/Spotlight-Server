@@ -344,9 +344,9 @@ public class EventHelper {
 				eventObj.put("broadcasterInfo", broadcasterInfoHelper.buildResponseObject(broadcasterInfoEntity.get(), viewer, false));
 
 			if(viewer != null && viewer.getId() != null) {
-				List<Favorite> favoriteEntity = favoriteRepository.findByEventAndViewer(event, viewer);
-				if(favoriteEntity != null && favoriteEntity.size() > 0) {
-					if (favoriteEntity.get(0).getEvent().getId() == event.getId()) {
+				Favorite favoriteEntity = favoriteRepository.findByEventAndViewer(event, viewer);
+				if(favoriteEntity != null) {
+					if (favoriteEntity.getEvent().getId() == event.getId()) {
 						eventObj.put("isFavorite", true);
 					} else {
 						eventObj.put("isFavorite", false);

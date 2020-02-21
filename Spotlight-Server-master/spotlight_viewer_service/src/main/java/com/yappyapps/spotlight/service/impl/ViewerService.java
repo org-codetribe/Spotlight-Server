@@ -279,19 +279,19 @@ public class ViewerService implements IViewerService {
             if (!viewerEntity.isPresent())
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
-            if (favoriteReqObj.getBroadcasterInfo() == null) {
+            /*if (favoriteReqObj.getBroadcasterInfo() == null) {
                 favoriteReqObj.setBroadcasterInfo(eventEntity.get().getBroadcasterInfo());
             } else {
                 utils.isEmptyOrNull(favoriteReqObj.getBroadcasterInfo().getId(), "BroadcasterId");
                 utils.isIntegerGreaterThanZero(favoriteReqObj.getBroadcasterInfo().getId(), "BroadcasterId");
-            }
+            }*/
 
             if (favoriteFlag) {
-                if (favoriteRepository.findByBroadcasterInfoAndEventAndViewer(favoriteReqObj.getBroadcasterInfo(), favoriteReqObj.getEvent(), favoriteReqObj.getViewer()) != null)
+                if (favoriteRepository.findByEventAndViewer(favoriteReqObj.getEvent(), favoriteReqObj.getViewer()) != null)
                     throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
-                favoriteReqObj = favoriteRepository.save(favoriteReqObj);
+               favoriteRepository.save(favoriteReqObj);
             } else {
-                Favorite favoriteEntity = favoriteRepository.findByBroadcasterInfoAndEventAndViewer(favoriteReqObj.getBroadcasterInfo(), favoriteReqObj.getEvent(), favoriteReqObj.getViewer());
+                Favorite favoriteEntity = favoriteRepository.findByEventAndViewer(favoriteReqObj.getEvent(), favoriteReqObj.getViewer());
                 if (favoriteEntity == null)
                     throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
                 favoriteRepository.delete(favoriteEntity);
