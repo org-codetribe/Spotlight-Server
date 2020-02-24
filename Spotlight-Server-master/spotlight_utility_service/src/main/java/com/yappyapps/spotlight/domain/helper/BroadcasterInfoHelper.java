@@ -180,10 +180,7 @@ public class BroadcasterInfoHelper {
     public JSONObject buildResponseObject(BroadcasterInfo broadcasterInfo, Viewer viewer, boolean deepGenreFlag) throws JSONException {
         JSONObject broadcasterInfoObj = new JSONObject();
         broadcasterInfoObj.put("id", broadcasterInfo.getId());
-
         broadcasterInfoObj.put("bannerUrl", broadcasterInfo.getBannerUrl());
-
-
         broadcasterInfoObj.put("biography", broadcasterInfo.getBiography());
         broadcasterInfoObj.put("displayName", broadcasterInfo.getDisplayName());
         broadcasterInfoObj.put("isTrending", broadcasterInfo.getIsTrending());

@@ -149,6 +149,10 @@ public class SpotlightUserHelper {
                         : spotlightUserEntity.getPassword());
         spotlightUserEntity.setAddress1(spotlightUserReqObj.getAddress1() != null ? spotlightUserReqObj.getAddress1()
                 : spotlightUserEntity.getAddress1());
+
+        spotlightUserEntity.setProfileUrl(spotlightUserReqObj.getProfileUrl() != null ? spotlightUserReqObj.getProfileUrl()
+                : spotlightUserEntity.getProfileUrl());
+
         spotlightUserEntity.setAddress2(spotlightUserReqObj.getAddress2() != null ? spotlightUserReqObj.getAddress2()
                 : spotlightUserEntity.getAddress2());
         spotlightUserEntity.setCity(
