@@ -1066,14 +1066,13 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 		Optional<BroadcasterInfo> broadcasterInfoEntity = null;
 
 		try {
-			
 			broadcasterInfoEntity = broadcasterInfoRepository.findById(broadcasterInfoReqObj.getId());
 			if (!broadcasterInfoEntity.isPresent()) {
-				if (broadcasterInfoReqObj.getBannerUrl() != null) {
+				/*if (broadcasterInfoReqObj.getBannerUrl() != null) {
 					this.amazonClient.deleteFileFromS3Bucket(broadcasterInfoReqObj.getBannerUrl());
 					LOGGER.info("Broadcaster is not present. deleting new uploaded file ::::::::: "
 							+ broadcasterInfoReqObj.getBannerUrl());
-				}
+				}*/
 				throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 			} else if (broadcasterInfoReqObj.getBannerUrl() != null) {
 				previousUrl = broadcasterInfoEntity.get().getBannerUrl();
