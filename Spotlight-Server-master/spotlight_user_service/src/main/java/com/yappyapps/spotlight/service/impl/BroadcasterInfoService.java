@@ -1062,7 +1062,7 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 		
 		// String previousUrl = broadcasterInfo.getBannerUrl(); // For Deletion of
 		// previous files
-		String previousUrl = "";
+		//String previousUrl = "";
 		Optional<BroadcasterInfo> broadcasterInfoEntity = null;
 
 		try {
@@ -1074,9 +1074,9 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 							+ broadcasterInfoReqObj.getBannerUrl());
 				}*/
 				throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
-			} else if (broadcasterInfoReqObj.getBannerUrl() != null) {
+			} /*else if (broadcasterInfoReqObj.getBannerUrl() != null) {
 				previousUrl = broadcasterInfoEntity.get().getBannerUrl();
-			}
+			}*/
 
 			if(broadcasterInfoReqObj.getStatus() != null && broadcasterInfoReqObj.getStatus().equalsIgnoreCase("InActive")) {
 				List<Event> eventList = eventRepository.findByBroadcasterInfoAndStatusAndEventUtcDatetimeGreaterThan(broadcasterInfoEntity.get(), "Active", new Timestamp(System.currentTimeMillis()));
@@ -1126,10 +1126,10 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 							.populateSpotlightCommission(spotlightCommissionReqObj);
 				spotlightCommissionRepository.save(spotlightCommission);
 			}
-			if (!previousUrl.equals("")) {
+			/*if (!previousUrl.equals("")) {
 				this.amazonClient.deleteFileFromS3Bucket(previousUrl);
 				LOGGER.info("Finally. deleting previous broadcaster banner file ::::::::: " + previousUrl);
-			}
+			}*/
 		} catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
 			if (broadcasterInfoEntity.get().getBannerUrl() != null) {
 				this.amazonClient.deleteFileFromS3Bucket(broadcasterInfoEntity.get().getBannerUrl());
