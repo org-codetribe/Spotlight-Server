@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.google.gson.Gson;
+import com.yappyapps.spotlight.domain.helper.WowzaEventDeleted;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONArray;
@@ -58,6 +60,7 @@ import com.yappyapps.spotlight.service.IEventService;
 import com.yappyapps.spotlight.util.AmazonClient;
 import com.yappyapps.spotlight.util.IConstants;
 import com.yappyapps.spotlight.util.Utils;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * The EventService class is the implementation of IEventService
@@ -327,7 +330,7 @@ public class EventService implements IEventService {
         }
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventEntity, null, true,new EventType()));
+        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventEntity, null, true, new EventType()));
         result = utils.constructSucessJSON(jObj);
 
         return result;
@@ -360,7 +363,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -399,7 +402,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -416,20 +419,20 @@ public class EventService implements IEventService {
         Optional<Viewer> viewerEntity = null;
         Optional<EventType> eventTypeEntity = null;
         try {
-            if(eventTypeId != null) {
+            if (eventTypeId != null) {
                 eventTypeEntity = eventTypeRepository.findById(eventTypeId);
                 if (!eventTypeEntity.isPresent())
                     throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
-            if(viewerId != null) {
+            if (viewerId != null) {
                 viewerEntity = viewerRepository.findById(viewerId);
                 if (!viewerEntity.isPresent())
                     throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
 
 
-            if(eventTypeEntity != null)
-            eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
+            if (eventTypeEntity != null)
+                eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
             else
                 eventList = (List<Event>) eventRepository.findAll();
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
@@ -443,12 +446,147 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity!=null ? viewerEntity.get() : null,eventTypeEntity!=null? eventTypeEntity.get() : null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity != null ? viewerEntity.get() : null, eventTypeEntity != null ? eventTypeEntity.get() : null));
 
         result = utils.constructSucessJSON(jObj);
 
         return result;
 
+    }
+
+    @Override
+    public String getEventStart(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+        Optional<Event> event = null;
+
+        Optional<SpotlightUser> spotlightUserEntity = null;
+        try {
+            if (spotlightId != null) {
+                spotlightUserEntity = spotlightUserRepository.findById(spotlightId);
+                if (!spotlightUserEntity.isPresent())
+                    throw new ResourceNotFoundException("SpotlightUser " + IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            event = eventRepository.findById(eventId);
+            if (!event.isPresent())
+                throw new ResourceNotFoundException("Event " + IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+            LiveStreamConfig liveStreamConfig = liveStreamConfigRepository.findByConnectionType("Cloud");
+            WowzaClient wowzaClient = new WowzaClient(liveStreamConfig);
+            if (event.get().getLiveStreamData() != null) {
+                JSONObject liveStreamData = new JSONObject(event.get().getLiveStreamData());
+                String wowzaResponse = "";
+                if (liveStreamData.has("live_stream")) {
+                    try {
+                        JSONObject liveStreamJObj = new JSONObject(liveStreamData.get("live_stream").toString());
+                        String liveStreamId = liveStreamJObj.get("id").toString();
+                        WowzaEventDeleted wowzaEventDeleted = null;
+                        try {
+                            wowzaResponse = wowzaClient.executeGet("live_streams/" + liveStreamId + "/state");
+                            wowzaEventDeleted = new Gson().fromJson(wowzaResponse, WowzaEventDeleted.class);
+                        } catch (HttpClientErrorException clientError) {
+                            event.get().setLiveStreamState("The requested resource has been deleted or not found");
+                        }
+                       // WowzaEventDeleted wowzaEventDeleted = new Gson().fromJson(wowzaResponse, WowzaEventDeleted.class);
+                        if (wowzaEventDeleted != null && wowzaEventDeleted.getMeta() != null) {
+                            String message = wowzaEventDeleted.getMeta().getMessage();
+                            event.get().setLiveStreamState(message);
+                        } else {
+                            String state = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
+                            event.get().setLiveStreamState(state);
+                            if (!state.equals("starting")) {
+                                wowzaResponse = wowzaClient.executePut("live_streams/" + liveStreamId + "/start");
+                                String stateStart = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
+                                event.get().setLiveStreamState(stateStart);
+                            } else if (state.equals("starting")) {
+                                event.get().setLiveStreamState("already starting");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        LOGGER.error("Exception in getting Event state from Wowza  " + e.getMessage());
+                        LOGGER.error("Exception in getting Event state from Wowza Cloud for EventId " + eventId);
+                    }
+                }
+            }
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+        JSONObject jObj = new JSONObject();
+
+        jObj.put("live_stream", new JSONObject().put("state", event.get().getLiveStreamState()));
+        result = utils.constructSucessJSON(jObj);
+        return result;
+    }
+
+
+    @Override
+    public String getEventStop(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+        Optional<Event> event = null;
+
+        Optional<SpotlightUser> spotlightUserEntity = null;
+        try {
+            if (spotlightId != null) {
+                spotlightUserEntity = spotlightUserRepository.findById(spotlightId);
+                if (!spotlightUserEntity.isPresent())
+                    throw new ResourceNotFoundException("SpotlightUser " + IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            event = eventRepository.findById(eventId);
+            if (!event.isPresent())
+                throw new ResourceNotFoundException("Event " + IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+            LiveStreamConfig liveStreamConfig = liveStreamConfigRepository.findByConnectionType("Cloud");
+            WowzaClient wowzaClient = new WowzaClient(liveStreamConfig);
+            if (event.get().getLiveStreamData() != null) {
+                JSONObject liveStreamData = new JSONObject(event.get().getLiveStreamData());
+                String wowzaResponse = "";
+                if (liveStreamData.has("live_stream")) {
+                    try {
+                        JSONObject liveStreamJObj = new JSONObject(liveStreamData.get("live_stream").toString());
+                        String liveStreamId = liveStreamJObj.get("id").toString();
+                        WowzaEventDeleted wowzaEventDeleted = null;
+                        try {
+                            wowzaResponse = wowzaClient.executeGet("live_streams/" + liveStreamId + "/state");
+                            wowzaEventDeleted = new Gson().fromJson(wowzaResponse, WowzaEventDeleted.class);
+                        } catch (HttpClientErrorException clientError) {
+                            event.get().setLiveStreamState("The requested resource has been deleted or not found");
+                        }
+                        if (wowzaEventDeleted != null && wowzaEventDeleted.getMeta() != null) {
+                            String message = wowzaEventDeleted.getMeta().getMessage();
+                            event.get().setLiveStreamState(message);
+                        } else {
+                            //wowzaResponse = wowzaClient.executeGet("live_streams/" + liveStreamId + "/state");
+                            String state = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
+                            event.get().setLiveStreamState(state);
+                            if (!state.equals("stopped")) {
+                                wowzaResponse = wowzaClient.executePut("live_streams/" + liveStreamId + "/stop");
+                                String stateStart = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
+                                event.get().setLiveStreamState(stateStart);
+                            } else if (state.equals("stopped")) {
+                                event.get().setLiveStreamState("already stopped");
+                            }
+
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        LOGGER.error("Exception in getting Event state from Wowza  " + e.getMessage());
+                        LOGGER.error("Exception in getting Event state from Wowza Cloud for EventId " + eventId);
+                    }
+                }
+            }
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+        JSONObject jObj = new JSONObject();
+        jObj.put("live_stream", new JSONObject().put("state", event.get().getLiveStreamState()));
+        result = utils.constructSucessJSON(jObj);
+        return result;
     }
 
     /**
@@ -483,7 +621,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,eventTypeEntity));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, eventTypeEntity));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -534,7 +672,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -548,7 +686,7 @@ public class EventService implements IEventService {
 
 
     @Override
-    public String getAllEventsWithViewer(Integer limit, Integer offset, String direction, String orderBy, Integer viewerId,Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception {
+    public String getAllEventsWithViewer(Integer limit, Integer offset, String direction, String orderBy, Integer viewerId, Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception {
         String result = null;
         long totalCount = 0;
 
@@ -590,7 +728,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewer.isPresent() ? viewer.get() : null,eventType.isPresent() ? eventType.get() : null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewer.isPresent() ? viewer.get() : null, eventType.isPresent() ? eventType.get() : null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -601,7 +739,6 @@ public class EventService implements IEventService {
         return result;
 
     }
-
 
 
     /**
@@ -652,7 +789,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -667,11 +804,10 @@ public class EventService implements IEventService {
     /**
      * This method is used to get all Events by EventType with paging.
      *
-     * @param eventTypeId: Integer
-     * @param limit:       Integer
-     * @param offset:      Integer
-     * @param direction:   String
-     * @param orderBy:     String
+     * @param limit:     Integer
+     * @param offset:    Integer
+     * @param direction: String
+     * @param orderBy:   String
      * @return String: Response
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
@@ -712,7 +848,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -773,7 +909,7 @@ public class EventService implements IEventService {
         }
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(event.get(), (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, true,new EventType()));
+        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(event.get(), (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, true, new EventType()));
         result = utils.constructSucessJSON(jObj);
         return result;
     }
@@ -971,7 +1107,7 @@ public class EventService implements IEventService {
         }
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventList, null, null));
         result = utils.constructSucessJSON(jObj);
         return result;
     }
@@ -1020,7 +1156,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -1085,7 +1221,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1141,7 +1277,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1182,7 +1318,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -1216,7 +1352,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
         result = utils.constructSucessJSON(jObj);
 
         return result;
@@ -1267,7 +1403,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1308,7 +1444,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -1347,7 +1483,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         result = utils.constructSucessJSON(jObj);
 
         return result;
@@ -1405,7 +1541,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1467,7 +1603,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1569,7 +1705,7 @@ public class EventService implements IEventService {
             throw new Exception(sqlException.getMessage());
         }
         JSONObject jObj = new JSONObject();
-       // jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventEntity.get(), null, null));
+        // jObj.put(IConstants.EVENT, eventHelper.buildResponseObject(eventEntity.get(), null, null));
         result = utils.constructSucessJSON(jObj);
         return result;
     }
@@ -1786,7 +1922,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1843,7 +1979,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
         jObj.put(IConstants.TOTAL_RECORDS, totalCount);
         jObj.put(IConstants.CURRENT_PAGE, pageNum);
         jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
@@ -1898,7 +2034,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
 
         result = utils.constructSucessJSON(jObj);
 
@@ -1936,7 +2072,7 @@ public class EventService implements IEventService {
 //		}
 
         JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null,null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
 
         result = utils.constructSucessJSON(jObj);
 

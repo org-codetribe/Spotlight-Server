@@ -85,5 +85,7 @@ public interface IViewerService extends UserDetailsService {
 	 *             Exception
 	 */
 	public String logoutViewer(String token)  throws ResourceNotFoundException, BusinessException, Exception;
+
+	public String findByEmail(String email)  throws ResourceNotFoundException, BusinessException, Exception;
 	
 }

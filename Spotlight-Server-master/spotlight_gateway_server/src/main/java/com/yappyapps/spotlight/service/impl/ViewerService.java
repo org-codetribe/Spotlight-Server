@@ -436,4 +436,19 @@ public class ViewerService implements IViewerService {
         return result;
 
     }
+
+    @Override
+    public String  findByEmail(String email) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        Viewer viewer =  viewerSessionRepository.findByEmail(email);
+        if (viewer == null) {
+            JSONObject jObj = new JSONObject();
+            jObj.put(IConstants.SUCCESS, "false");
+        }else {
+            JSONObject jObj = new JSONObject();
+            jObj.put(IConstants.SUCCESS, "true");
+            result = utils.constructSucessJSON(jObj);
+        }
+        return result;
+    }
 }

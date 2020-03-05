@@ -618,4 +618,6 @@ public interface IEventService {
 	public String getAllEvents(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
 
+	public String getEventStart(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception;
+	public String getEventStop(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception;;
 }

@@ -125,6 +125,18 @@ public class WowzaClient {
 		
 	}
 
+
+
+	public String executePut(String path) {
+		RestTemplate restTemplate = restTemplate();
+		restTemplate.setInterceptors(getCommonInterceptorHeaders());
+		HttpHeaders headers = new HttpHeaders();
+		System.out.println("https://api.cloud.wowza.com/api/v1.3/" + path);
+		ResponseEntity<String> result = restTemplate.exchange("https://api.cloud.wowza.com/api/v1.3/" + path, HttpMethod.PUT, new HttpEntity(headers), String.class);
+		return result.getBody();
+
+	}
+
 	public String executeDelete(String path) {
 		RestTemplate restTemplate = restTemplate();
 		restTemplate.setInterceptors(getCommonInterceptorHeaders());

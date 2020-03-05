@@ -522,7 +522,7 @@ public class BroadcasterInfoController {
 		utils.isEmptyOrNull(spotlightUserId, "spotlightUserId");
 		utils.isIntegerGreaterThanZero(spotlightUserId, "spotlightUserId");
 		try {
-			result = broadcasterInfoService.getBroadcasterInfoBySpotlightUserId(Integer.parseInt(spotlightUserId));
+				result = broadcasterInfoService.getBroadcasterInfoBySpotlightUserId(Integer.parseInt(spotlightUserId));
 		} catch (InvalidParameterException e) {
 			LOGGER.error(e.getMessage());
 			throw e;
@@ -760,7 +760,7 @@ public class BroadcasterInfoController {
 			utils.isEmptyOrNull(broadcasterInfo.getSpotlightUser().getPaypalEmailId(), "Paypal Email Id");
 		}
 
-		broadcasterInfo.setBannerUrl(null);
+		//broadcasterInfo.setBannerUrl(null);
 		JSONObject reqJson = new JSONObject(requestBody);
 		if (reqJson.has("commission") && reqJson.get("commission") != null
 				&& !reqJson.get("commission").toString().equals("")) {

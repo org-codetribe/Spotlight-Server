@@ -28,6 +28,7 @@ public interface IViewerSessionRepository extends CrudRepository<ViewerSession, 
 	void deleteByViewer(Viewer viewer);
 
 	ViewerSession findByAuthToken(String authToken);
+	Viewer findByEmail(String email);
 
 
 

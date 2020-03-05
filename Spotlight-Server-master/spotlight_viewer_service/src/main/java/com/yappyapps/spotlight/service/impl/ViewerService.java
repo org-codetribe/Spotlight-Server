@@ -60,6 +60,9 @@ public class ViewerService implements IViewerService {
     @Autowired
     private IViewerRepository viewerRepository;
 
+    @Autowired
+    private ISpotlightUserRepository spotlightUserRepository;
+
     /**
      * IFavoriteRepository dependency will be automatically injected.
      * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
@@ -289,7 +292,7 @@ public class ViewerService implements IViewerService {
             if (favoriteFlag) {
                 if (favoriteRepository.findByEventAndViewer(favoriteReqObj.getEvent(), favoriteReqObj.getViewer()) != null)
                     throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
-               favoriteRepository.save(favoriteReqObj);
+                favoriteRepository.save(favoriteReqObj);
             } else {
                 Favorite favoriteEntity = favoriteRepository.findByEventAndViewer(favoriteReqObj.getEvent(), favoriteReqObj.getViewer());
                 if (favoriteEntity == null)
@@ -862,7 +865,14 @@ public class ViewerService implements IViewerService {
             }
 
             viewerHelper.populateViewer(viewerReqObj, viewerEntity.get());
-            viewerRepository.save(viewerEntity.get());
+            Viewer viewer = viewerRepository.save(viewerEntity.get());
+
+            SpotlightUser byEmail = spotlightUserRepository.findByEmail(viewer.getEmail());
+            if (byEmail != null) {
+                byEmail.setProfileUrl(viewer.getProfilePicture());
+                spotlightUserRepository.save(byEmail);
+            }
+
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
         } catch (HibernateException | JpaSystemException sqlException) {

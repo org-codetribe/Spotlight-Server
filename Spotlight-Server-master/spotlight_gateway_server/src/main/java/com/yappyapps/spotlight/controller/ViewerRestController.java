@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.SpotlightUser;
+import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
 import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
@@ -19,12 +20,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.gson.Gson;
 import com.yappyapps.spotlight.domain.Viewer;
@@ -517,4 +513,52 @@ public class 	ViewerRestController {
 
 		return result;
 	}
+
+
+
+
+
+	@RequestMapping(value = "api/1.0/email-exist/viewer", method = RequestMethod.GET, produces = {
+			MediaType.APPLICATION_JSON_VALUE })
+	public @ResponseBody String emailExist(@RequestParam("email") String email)
+			throws SpotlightAuthenticationException, BusinessException {
+		String operation = "emailExist";
+		LOGGER.info("ViewerRestController :: " + operation + " :: email :: " + email);
+		long startTime = System.currentTimeMillis();
+		String result = "";
+
+		if (email == null || email == "")
+			throw new ResourceNotFoundException("email can be empty !");
+		try {
+			result = viewerService.findByEmail(email);
+		} catch (SpotlightAuthenticationException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (UsernameNotFoundException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (BusinessException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+		} finally {
+			meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+		}
+
+		return result;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
 }

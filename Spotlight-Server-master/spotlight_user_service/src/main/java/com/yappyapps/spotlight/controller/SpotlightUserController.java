@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -117,8 +118,8 @@ public class SpotlightUserController {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String createSpotlightUser(@RequestParam(value = "request") String requestBody,
-                               @RequestHeader("Content-Type") String contentType, @RequestPart(value = "bannerUrl",required = false) MultipartFile[] bannerUrl,
-                               @RequestPart(value = "image",required = false) MultipartFile[] image,
+                               @RequestHeader("Content-Type") String contentType, @RequestPart(value = "bannerUrl", required = false) MultipartFile[] bannerUrl,
+                               @RequestPart(value = "image", required = false) MultipartFile[] image,
                                @RequestHeader(value = "Authorization", required = false) String authorization)
             throws InvalidParameterException, AlreadyExistException, BusinessException {
         String operation = "createSpotlightUser";
@@ -127,10 +128,10 @@ public class SpotlightUserController {
         long startTime = System.currentTimeMillis();
         String result = "";
         utils.isBodyJSONObject(requestBody);
-         BroadcasterInfo broadcasterInfo = gson.fromJson(requestBody, BroadcasterInfo.class);
+        BroadcasterInfo broadcasterInfo = gson.fromJson(requestBody, BroadcasterInfo.class);
 
-       // utils.isEmptyOrNull(spotlightUser.getEmail(), "Email");
-       // utils.isEmailValid(spotlightUser.getEmail());
+        // utils.isEmptyOrNull(spotlightUser.getEmail(), "Email");
+        // utils.isEmailValid(spotlightUser.getEmail());
         utils.isEmptyOrNull(broadcasterInfo.getSpotlightUser().getName(), "Name");
         utils.isEmptyOrNull(broadcasterInfo.getSpotlightUser().getUserType(), "User Type");
         utils.isEmptyOrNull(broadcasterInfo.getShortDesc(), "shortDesc");
@@ -149,7 +150,7 @@ public class SpotlightUserController {
                 }
                 return null;
             }).collect(Collectors.toList());
-        }else{
+        } else {
             broadcasterInfo.setBannerUrl("NO_IMAGE_FOUND");
         }
 
@@ -166,7 +167,7 @@ public class SpotlightUserController {
                 }
                 return null;
             }).collect(Collectors.toList());
-        }else {
+        } else {
             broadcasterInfo.getSpotlightUser().setProfileUrl("NO_IMAGE_FOUND");
         }
 
@@ -175,7 +176,7 @@ public class SpotlightUserController {
             if (broadcasterInfo.getSpotlightUser().getUserType().equalsIgnoreCase("BROADCASTER")) {
                 if (authorization == null || !authorization.startsWith("Bearer "))
                     throw new SpotlightAuthenticationException("Client is not Authorized.");
-                 String username = jwtTokenUtil.getUsernameFromToken(authorization.substring(7));
+                String username = jwtTokenUtil.getUsernameFromToken(authorization.substring(7));
 
 
                 if (username.startsWith("_V")) {
@@ -215,9 +216,9 @@ public class SpotlightUserController {
             //result = spotlightUserService.createSpotlightUser(broadcasterInfo.getSpotlightUser());
             //SpotlightUser  byEmail = spotlightUserRepository.findByEmail(viewerEntity.getEmail());
             //byEmail.setEmail(null);
-           // broadcasterInfo.setSpotlightUser(byEmail);
-             //BroadcasterInfo broadcasterInfo1 = gson.fromJson(result, BroadcasterInfo.class);
-           //  broadcasterInfo1.setDisplayName(b);
+            // broadcasterInfo.setSpotlightUser(byEmail);
+            //BroadcasterInfo broadcasterInfo1 = gson.fromJson(result, BroadcasterInfo.class);
+            //  broadcasterInfo1.setDisplayName(b);
             result = broadcasterInfoService.createBroadcasterInfo(broadcasterInfo);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
@@ -547,10 +548,10 @@ public class SpotlightUserController {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String updateSpotlightUserProfile(@RequestParam("request") String requestBody,
-                                      @RequestHeader("Content-Type") String contentType,@RequestPart(value = "profilePicture", required = false) MultipartFile[] image,
+                                      @RequestHeader("Content-Type") String contentType, @RequestPart(value = "profilePicture", required = false) MultipartFile[] image,
                                       @RequestPart(value = "bannerUrl", required = false) MultipartFile[] bannerUrl,
-                                      @RequestParam(value = "shortDesc",required = false)String shortDesc,
-                                      @RequestParam(value = "biography",required = false)String biography)
+                                      @RequestParam(value = "shortDesc", required = false) String shortDesc,
+                                      @RequestParam(value = "biography", required = false) String biography)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateSpotlightUserProfile";
         LOGGER.info("SpotlightUserController :: " + operation + " :: RequestBody :: " + requestBody
@@ -561,7 +562,7 @@ public class SpotlightUserController {
         SpotlightUser spotlightUser = gson.fromJson(requestBody, SpotlightUser.class);
         utils.isEmptyOrNull(spotlightUser.getId(), "id");
         utils.isIntegerGreaterThanZero(spotlightUser.getId(), "id");
-       // utils.isAvailableObjectEmpty(spotlightUser.getName(), "Name");
+        // utils.isAvailableObjectEmpty(spotlightUser.getName(), "Name");
         // utils.isEmptyOrNull(spotlightUser.getEmail(), "Email");
         try {
 
@@ -570,7 +571,8 @@ public class SpotlightUserController {
                     try {
                         LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
                         String url = this.amazonClient.uploadFile(file);
-                         spotlightUser.setProfileUrl(url);
+                        spotlightUser.setProfileUrl(url);
+
                         LOGGER.info("file URL :::: " + spotlightUser.getProfileUrl());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -578,14 +580,14 @@ public class SpotlightUserController {
                     return null;
                 }).collect(Collectors.toList());
             }
-            String  broadcasterInfo = broadcasterInfoService.getBroadcasterInfoBySpotlightUserId(spotlightUser.getId());
-            Result response =  gson.fromJson(broadcasterInfo,Result.class);
+            String broadcasterInfo = broadcasterInfoService.getBroadcasterInfoBySpotlightUserId(spotlightUser.getId());
+            Result response = gson.fromJson(broadcasterInfo, Result.class);
 
             BroadcasterInfo broadcasterInfo1 = response.getResponse().getBroadcaster();
-            if(shortDesc !=null && shortDesc != "" && shortDesc.length() > 0){
+            if (shortDesc != null && shortDesc != "" && shortDesc.length() > 0) {
                 broadcasterInfo1.setShortDesc(shortDesc);
             }
-            if(biography !=null && biography != "" && biography.length() > 0){
+            if (biography != null && biography != "" && biography.length() > 0) {
                 broadcasterInfo1.setBiography(biography);
             }
             if (null != bannerUrl && Arrays.asList(bannerUrl).size() > 0) {
@@ -594,7 +596,7 @@ public class SpotlightUserController {
                         LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
                         String url = this.amazonClient.uploadFile(file);
                         broadcasterInfo1.setBannerUrl(url);
-                       LOGGER.info("file URL :::: " + broadcasterInfo1.getBannerUrl());
+                        LOGGER.info("file URL :::: " + broadcasterInfo1.getBannerUrl());
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -602,11 +604,16 @@ public class SpotlightUserController {
                 }).collect(Collectors.toList());
             }
             spotlightUserService.updateSpotlightUser(spotlightUser);
-            String  spotlightUserResult = spotlightUserService.getSpotlightUser(spotlightUser.getId());
-            Result spotlightUser_ = gson.fromJson(spotlightUserResult,Result.class);
+            viewerRepository.findByEmail(spotlightUser.getEmail());
+            String spotlightUserResult = spotlightUserService.getSpotlightUser(spotlightUser.getId());
+            Result spotlightUser_ = gson.fromJson(spotlightUserResult, Result.class);
             broadcasterInfo1.setSpotlightUser(spotlightUser_.getResponse().getUser());
-
-           result =  broadcasterInfoService.updateBroadcasterInfo(broadcasterInfo1);
+            result = broadcasterInfoService.updateBroadcasterInfo(broadcasterInfo1);
+            Viewer byEmailViewer = viewerRepository.findByEmail(spotlightUser_.getResponse().getUser().getEmail());
+            if (spotlightUser != null && spotlightUser.getProfileUrl() != null) {
+                byEmailViewer.setProfilePicture(spotlightUser.getProfileUrl());
+                viewerRepository.save(byEmailViewer);
+            }
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
             throw e;
@@ -715,14 +722,14 @@ public class SpotlightUserController {
 }
 
 
- class Response {
+class Response {
     @SerializedName("broadcaster")
     @Expose
     private BroadcasterInfo broadcaster;
 
-     @SerializedName("user")
-     @Expose
-     private SpotlightUser user;
+    @SerializedName("user")
+    @Expose
+    private SpotlightUser user;
     @SerializedName("success")
     @Expose
     private Boolean success;
@@ -743,14 +750,14 @@ public class SpotlightUserController {
         this.success = success;
     }
 
-     public SpotlightUser getUser() {
-         return user;
-     }
+    public SpotlightUser getUser() {
+        return user;
+    }
 
-     public void setUser(SpotlightUser user) {
-         this.user = user;
-     }
- }
+    public void setUser(SpotlightUser user) {
+        this.user = user;
+    }
+}
 
 class Result {
 
