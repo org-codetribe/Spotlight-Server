@@ -16,8 +16,8 @@
 		<module>spotlight_user_service</module>
 		<module>spotlight_coupon_service</module>
 		<module>spotlight_genre_service</module>
-		<module>spotlight_viewer_service</module>
 		<module>spotlight_event_service</module>
+		<module>spotlight_viewer_service</module>
 		<module>spotlight_payment_service</module>
 		<module>spotlight_gateway_server</module>
 		<module>spotlight_search_service</module>
