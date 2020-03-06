@@ -610,7 +610,7 @@ public class SpotlightUserController {
             broadcasterInfo1.setSpotlightUser(spotlightUser_.getResponse().getUser());
             result = broadcasterInfoService.updateBroadcasterInfo(broadcasterInfo1);
             Viewer byEmailViewer = viewerRepository.findByEmail(spotlightUser_.getResponse().getUser().getEmail());
-            if (spotlightUser != null && spotlightUser.getProfileUrl() != null) {
+            if (spotlightUser != null && spotlightUser.getProfileUrl() != null && byEmailViewer != null) {
                 byEmailViewer.setProfilePicture(spotlightUser.getProfileUrl());
                 viewerRepository.save(byEmailViewer);
             }
