@@ -170,7 +170,7 @@ public class ViewerRestController {
         Viewer viewer = gson.fromJson(requestBody, Viewer.class);
         utils.isEmptyOrNull(viewer.getSocialLoginType(), "Social Login Type");
 
-        utils.isEmptyOrNull(viewer.getFacebookAndGmail(), "Social Login id cannot be null or empty");
+        utils.isEmptyOrNull(viewer.getFacebookGmailId(), "Social Login id cannot be null or empty");
 		/*if(viewer.getEmail() != null && viewer.getPhone() != null) {
 			if (viewer.getEmail() == null)
 				utils.isEmptyOrNull(viewer.getEmail(), "Email");
@@ -180,12 +180,12 @@ public class ViewerRestController {
         utils.isStatusValid(viewer.getStatus());
         try {
             if (viewer.getSocialLoginType().equalsIgnoreCase("FB")) {
-                Viewer byEmailFB = iViewerRepository.findByFacebookAndGmail(viewer.getFacebookAndGmail());
+                Viewer byEmailFB = iViewerRepository.findByFacebookGmailId(viewer.getFacebookGmailId());
                 if (byEmailFB != null) {
                     if (byEmailFB.getEmail() == null) {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
-                        jObj.put("message", "Email id not found for existing user " + viewer.getFacebookAndGmail());
+                        jObj.put("message", "Email id not found for existing user " + viewer.getFacebookGmailId());
                         JSONObject responseJObj = new JSONObject();
                         responseJObj.put(IConstants.RESPONSE, jObj);
                         result = jObj.toString();
@@ -221,7 +221,7 @@ public class ViewerRestController {
                     if (byEmailFB.getEmail() == null) {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
-                        jObj.put("message", "Email id not found for new user " + viewer.getFacebookAndGmail());
+                        jObj.put("message", "Email id not found for new user " + viewer.getFacebookGmailId());
                         JSONObject responseJObj = new JSONObject();
                         responseJObj.put(IConstants.RESPONSE, jObj);
                         result = jObj.toString();
@@ -243,7 +243,7 @@ public class ViewerRestController {
                     String generatedPassword = Utils.generateRandomPassword(10);
                     viewer.setEmail(viewer.getEmail());
                     viewer.setUsername(viewer.getEmail());
-                    viewer.setFacebookAndGmail(viewer.getFacebookAndGmail());
+                    viewer.setFacebookGmailId(viewer.getFacebookGmailId());
                     viewer.setPassword(passwordEncoder.encode(generatedPassword));
                     viewer.setChatName(new Date().getTime() + "".trim());
                     viewerService.createViewer(viewer);
@@ -287,7 +287,7 @@ public class ViewerRestController {
                 String generatedPassword = Utils.generateRandomPassword(10);
                 viewer.setEmail(viewer.getEmail());
                 viewer.setUsername(viewer.getEmail());
-                viewer.setFacebookAndGmail(viewer.getFacebookAndGmail());
+                viewer.setFacebookGmailId(viewer.getFacebookGmailId());
                 viewer.setPassword(passwordEncoder.encode(generatedPassword));
                 //viewer.setProfilePicture(pictureUrl);
                 Viewer byEmail = iViewerRepository.findByEmail(viewer.getEmail());
