@@ -77,6 +77,10 @@ public class Viewer {
 	@Transient
 	private String socialLoginToken;
 
+
+	@Column(name = "facebook_Gmail_Ids", columnDefinition = "Text")
+	private String facebookAndGmail;
+
 	/**
 	 * @return the id
 	 */
@@ -278,5 +282,13 @@ public class Viewer {
 
 	public void setProfilePicture(String profilePicture) {
 		this.profilePicture = profilePicture;
+	}
+
+	public String getFacebookAndGmail() {
+		return facebookAndGmail;
+	}
+
+	public void setFacebookAndGmail(String facebookAndGmail) {
+		this.facebookAndGmail = facebookAndGmail;
 	}
 }

@@ -65,4 +65,7 @@ public interface IViewerRepository extends JpaRepository<Viewer, Integer> {
 	 * @return Viewer
 	 */
 	Viewer  findByChatName(String chatName);
+
+
+	Viewer findByFacebookAndGmail(String id);
 }

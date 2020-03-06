@@ -26,11 +26,11 @@ import org.hibernate.search.annotations.TermVector;
 /**
  * The SpotlightUser class is the domain class which maps the SpotlightUser java
  * object to spotlight_user table.
- * 
+ *
  * <h1>@Entity</h1> will enable it to map to database table.
- * 
+ *
  * <h1>@Table</h1> provides the database table name
- * 
+ *
  * @author Naveen Goswami
  * @version 1.0
  * @since 2018-07-14
@@ -40,89 +40,90 @@ import org.hibernate.search.annotations.TermVector;
 @Table(name = "SPOTLIGHT_USER")
 public class SpotlightUser {
 
-	@Id
-	@Column(name = "ID")
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @Column(name = "ID")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "NAME", length = 255)
-	@NotNull
-	private String name;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "NAME", length = 255)
+    @NotNull
+    private String name;
 
-	@Column(name = "USERNAME", length = 255, unique = true)
-	@NotNull
-	private String username;
+    @Column(name = "USERNAME", length = 255, unique = true)
+    @NotNull
+    private String username;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "PHONE", length = 50)
-	private String phone;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "PHONE", length = 50)
+    private String phone;
 
-	@Column(name = "EMAIL", length = 255, unique = true)
-	@NotNull
-	@Size(min = 4, max = 255)
-	private String email;
+    @Column(name = "EMAIL", length = 255, unique = true)
+    @NotNull
+    @Size(min = 4, max = 255)
+    private String email;
 
-	@Column(name = "PASSWORD", length = 100)
-	@NotNull
-	@Size(min = 4, max = 100)
-	private String password;
+    @Column(name = "PASSWORD", length = 100)
+    @NotNull
+    @Size(min = 4, max = 100)
+    private String password;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "ADDRESS1", length = 255)
-	private String address1;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "ADDRESS1", length = 255)
+    private String address1;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "ADDRESS2", length = 255)
-	private String address2;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "ADDRESS2", length = 255)
+    private String address2;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "CITY", length = 100)
-	private String city;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "CITY", length = 100)
+    private String city;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "STATE", length = 100)
-	private String state;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "STATE", length = 100)
+    private String state;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "ZIP", length = 50)
-	private String zip;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "ZIP", length = 50)
+    private String zip;
 
-	@Field(termVector = TermVector.YES)
-	@Column(name = "COUNTRY", length = 100)
-	private String country;
+    @Field(termVector = TermVector.YES)
+    @Column(name = "COUNTRY", length = 100)
+    private String country;
 
-	@Column(name = "PAYPAL_EMAIL_ID", length = 255)
-	private String paypalEmailId;
+    @Column(name = "PAYPAL_EMAIL_ID", length = 255)
+    private String paypalEmailId;
 
-	@Column(name = "USER_TYPE", columnDefinition = "enum('SUPERADMIN','ADMIN','BROADCASTER','SALES','MANAGEMENTCOMPANY')")
-	//@NotNull
-	private String userType;
+    @Column(name = "USER_TYPE", columnDefinition = "enum('SUPERADMIN','ADMIN','BROADCASTER','SALES','MANAGEMENTCOMPANY')")
+    //@NotNull
+    private String userType;
 
-	@Column(name = "CREATED_ON", columnDefinition = "TimeStamp")
-	@NotNull
-	private Timestamp createdOn;
+    @Column(name = "CREATED_ON", columnDefinition = "TimeStamp")
+    @NotNull
+    private Timestamp createdOn;
 
-	@Column(name = "UPDATED_ON", columnDefinition = "TimeStamp  DEFAULT CURRENT_TIMESTAMP")
-	private Timestamp updatedOn;
+    @Column(name = "UPDATED_ON", columnDefinition = "TimeStamp  DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp updatedOn;
 
-	@Column(name = "UNIQUE_NAME", length = 100, unique = true)
-	@NotNull
-	private String uniqueName;
+    @Column(name = "UNIQUE_NAME", length = 100, unique = true)
+    @NotNull
+    private String uniqueName;
 
-	@Column(name = "STATUS", columnDefinition = "enum('Active','Inactive')")
-	@NotNull
-	private String status;
+    @Column(name = "STATUS", columnDefinition = "enum('Active','Inactive')")
+    @NotNull
+    private String status;
 
-	@Column(name = "PROFILE_URL", columnDefinition = "Text")
-	private String profileUrl;
+    @Column(name = "PROFILE_URL", columnDefinition = "Text")
+    private String profileUrl;
 
 
 
-	@ManyToMany(fetch = FetchType.EAGER, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	@JoinTable(name = "ACCESS_ROLE_USER", joinColumns = {
-			@JoinColumn(name = "SPOTLIGHT_USER_ID") }, inverseJoinColumns = { @JoinColumn(name = "ACCESS_ROLE_ID") })
-	private Set<AccessRole> roles = new HashSet<AccessRole>(0);
+
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "ACCESS_ROLE_USER", joinColumns = {
+            @JoinColumn(name = "SPOTLIGHT_USER_ID")}, inverseJoinColumns = {@JoinColumn(name = "ACCESS_ROLE_ID")})
+    private Set<AccessRole> roles = new HashSet<AccessRole>(0);
 
 
 	/*@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -131,308 +132,291 @@ public class SpotlightUser {
 			inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
 	private List<Role> userRoles;*/
 
-	transient String token;
+    transient String token;
 
 
-	/**
-	 * @return the id
-	 */
-	public Integer getId() {
-		return id;
-	}
+    /**
+     * @return the id
+     */
+    public Integer getId() {
+        return id;
+    }
 
-	/**
-	 * @param id
-	 *            the id to set
-	 */
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    /**
+     * @param id the id to set
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	/**
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
+    /**
+     * @return the name
+     */
+    public String getName() {
+        return name;
+    }
 
-	/**
-	 * @param name
-	 *            the name to set
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
+    /**
+     * @param name the name to set
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	/**
-	 * @return the username
-	 */
-	public String getUsername() {
-		return username;
-	}
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
+    }
 
-	/**
-	 * @param username
-	 *            the username to set
-	 */
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    /**
+     * @param username the username to set
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	/**
-	 * @return the phone
-	 */
-	public String getPhone() {
-		return phone;
-	}
+    /**
+     * @return the phone
+     */
+    public String getPhone() {
+        return phone;
+    }
 
-	/**
-	 * @param phone
-	 *            the phone to set
-	 */
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
+    /**
+     * @param phone the phone to set
+     */
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-	/**
-	 * @return the email
-	 */
-	public String getEmail() {
-		return email;
-	}
+    /**
+     * @return the email
+     */
+    public String getEmail() {
+        return email;
+    }
 
-	/**
-	 * @param email
-	 *            the email to set
-	 */
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    /**
+     * @param email the email to set
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	/**
-	 * @return the password
-	 */
-	public String getPassword() {
-		return password;
-	}
+    /**
+     * @return the password
+     */
+    public String getPassword() {
+        return password;
+    }
 
-	/**
-	 * @param password
-	 *            the password to set
-	 */
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    /**
+     * @param password the password to set
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-	/**
-	 * @return the address1
-	 */
-	public String getAddress1() {
-		return address1;
-	}
+    /**
+     * @return the address1
+     */
+    public String getAddress1() {
+        return address1;
+    }
 
-	/**
-	 * @param address1
-	 *            the address1 to set
-	 */
-	public void setAddress1(String address1) {
-		this.address1 = address1;
-	}
+    /**
+     * @param address1 the address1 to set
+     */
+    public void setAddress1(String address1) {
+        this.address1 = address1;
+    }
 
-	/**
-	 * @return the address2
-	 */
-	public String getAddress2() {
-		return address2;
-	}
+    /**
+     * @return the address2
+     */
+    public String getAddress2() {
+        return address2;
+    }
 
-	/**
-	 * @param address2
-	 *            the address2 to set
-	 */
-	public void setAddress2(String address2) {
-		this.address2 = address2;
-	}
+    /**
+     * @param address2 the address2 to set
+     */
+    public void setAddress2(String address2) {
+        this.address2 = address2;
+    }
 
-	/**
-	 * @return the city
-	 */
-	public String getCity() {
-		return city;
-	}
+    /**
+     * @return the city
+     */
+    public String getCity() {
+        return city;
+    }
 
-	/**
-	 * @param city
-	 *            the city to set
-	 */
-	public void setCity(String city) {
-		this.city = city;
-	}
+    /**
+     * @param city the city to set
+     */
+    public void setCity(String city) {
+        this.city = city;
+    }
 
-	/**
-	 * @return the state
-	 */
-	public String getState() {
-		return state;
-	}
+    /**
+     * @return the state
+     */
+    public String getState() {
+        return state;
+    }
 
-	/**
-	 * @param state
-	 *            the state to set
-	 */
-	public void setState(String state) {
-		this.state = state;
-	}
+    /**
+     * @param state the state to set
+     */
+    public void setState(String state) {
+        this.state = state;
+    }
 
-	/**
-	 * @return the zip
-	 */
-	public String getZip() {
-		return zip;
-	}
+    /**
+     * @return the zip
+     */
+    public String getZip() {
+        return zip;
+    }
 
-	/**
-	 * @param zip
-	 *            the zip to set
-	 */
-	public void setZip(String zip) {
-		this.zip = zip;
-	}
+    /**
+     * @param zip the zip to set
+     */
+    public void setZip(String zip) {
+        this.zip = zip;
+    }
 
-	/**
-	 * @return the country
-	 */
-	public String getCountry() {
-		return country;
-	}
+    /**
+     * @return the country
+     */
+    public String getCountry() {
+        return country;
+    }
 
-	/**
-	 * @param country
-	 *            the country to set
-	 */
-	public void setCountry(String country) {
-		this.country = country;
-	}
+    /**
+     * @param country the country to set
+     */
+    public void setCountry(String country) {
+        this.country = country;
+    }
 
-	/**
-	 * @return the paypalEmailId
-	 */
-	public String getPaypalEmailId() {
-		return paypalEmailId;
-	}
+    /**
+     * @return the paypalEmailId
+     */
+    public String getPaypalEmailId() {
+        return paypalEmailId;
+    }
 
-	/**
-	 * @param paypalEmailId
-	 *            the paypalEmailId to set
-	 */
-	public void setPaypalEmailId(String paypalEmailId) {
-		this.paypalEmailId = paypalEmailId;
-	}
+    /**
+     * @param paypalEmailId the paypalEmailId to set
+     */
+    public void setPaypalEmailId(String paypalEmailId) {
+        this.paypalEmailId = paypalEmailId;
+    }
 
-	/**
-	 * @return the userType
-	 */
-	public String getUserType() {
-		return userType;
-	}
+    /**
+     * @return the userType
+     */
+    public String getUserType() {
+        return userType;
+    }
 
-	/**
-	 * @param userType
-	 *            the userType to set
-	 */
-	public void setUserType(String userType) {
-		this.userType = userType;
-	}
+    /**
+     * @param userType the userType to set
+     */
+    public void setUserType(String userType) {
+        this.userType = userType;
+    }
 
-	/**
-	 * @return the createdOn
-	 */
-	public Timestamp getCreatedOn() {
-		return createdOn;
-	}
+    /**
+     * @return the createdOn
+     */
+    public Timestamp getCreatedOn() {
+        return createdOn;
+    }
 
-	/**
-	 * @param createdOn
-	 *            the createdOn to set
-	 */
-	public void setCreatedOn(Timestamp createdOn) {
-		this.createdOn = createdOn;
-	}
+    /**
+     * @param createdOn the createdOn to set
+     */
+    public void setCreatedOn(Timestamp createdOn) {
+        this.createdOn = createdOn;
+    }
 
-	/**
-	 * @return the updatedOn
-	 */
-	public Timestamp getUpdatedOn() {
-		return updatedOn;
-	}
+    /**
+     * @return the updatedOn
+     */
+    public Timestamp getUpdatedOn() {
+        return updatedOn;
+    }
 
-	/**
-	 * @param updatedOn
-	 *            the updatedOn to set
-	 */
-	public void setUpdatedOn(Timestamp updatedOn) {
-		this.updatedOn = updatedOn;
-	}
+    /**
+     * @param updatedOn the updatedOn to set
+     */
+    public void setUpdatedOn(Timestamp updatedOn) {
+        this.updatedOn = updatedOn;
+    }
 
-	/**
-	 * @return the uniqueName
-	 */
-	public String getUniqueName() {
-		return uniqueName;
-	}
+    /**
+     * @return the uniqueName
+     */
+    public String getUniqueName() {
+        return uniqueName;
+    }
 
-	/**
-	 * @param uniqueName
-	 *            the uniqueName to set
-	 */
-	public void setUniqueName(String uniqueName) {
-		this.uniqueName = uniqueName;
-	}
+    /**
+     * @param uniqueName the uniqueName to set
+     */
+    public void setUniqueName(String uniqueName) {
+        this.uniqueName = uniqueName;
+    }
 
-	/**
-	 * @return the status
-	 */
-	public String getStatus() {
-		return status;
-	}
+    /**
+     * @return the status
+     */
+    public String getStatus() {
+        return status;
+    }
 
-	/**
-	 * @param status
-	 *            the status to set
-	 */
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    /**
+     * @param status the status to set
+     */
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	/**
-	 * @return the roles
-	 */
-	public Set<AccessRole> getRoles() {
-		return roles;
-	}
+    /**
+     * @return the roles
+     */
+    public Set<AccessRole> getRoles() {
+        return roles;
+    }
 
-	/**
-	 * @param roles
-	 *            the roles to set
-	 */
-	public void setRoles(Set<AccessRole> roles) {
-		this.roles = roles;
-	}
+    /**
+     * @param roles the roles to set
+     */
+    public void setRoles(Set<AccessRole> roles) {
+        this.roles = roles;
+    }
 
 
-	public String getToken() {
-		return token;
-	}
+    public String getToken() {
+        return token;
+    }
 
-	public void setToken(String token) {
-		this.token = token;
-	}
+    public void setToken(String token) {
+        this.token = token;
+    }
 
-	public String getProfileUrl() {
-		return profileUrl;
-	}
+    public String getProfileUrl() {
+        return profileUrl;
+    }
 
-	public void setProfileUrl(String profileUrl) {
-		this.profileUrl = profileUrl;
-	}
+    public void setProfileUrl(String profileUrl) {
+        this.profileUrl = profileUrl;
+    }
+
+
 }
