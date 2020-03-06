@@ -79,7 +79,7 @@ public class Viewer {
 
 
 	@Column(name = "facebook_Gmail_Ids", columnDefinition = "Text")
-	private String facebookAndGmail;
+	private String facebookGmailId;
 
 	/**
 	 * @return the id
@@ -284,11 +284,11 @@ public class Viewer {
 		this.profilePicture = profilePicture;
 	}
 
-	public String getFacebookAndGmail() {
-		return facebookAndGmail;
+	public String getFacebookGmailId() {
+		return facebookGmailId;
 	}
 
-	public void setFacebookAndGmail(String facebookAndGmail) {
-		this.facebookAndGmail = facebookAndGmail;
+	public void setFacebookGmailId(String facebookGmailId) {
+		this.facebookGmailId = facebookGmailId;
 	}
 }
