@@ -45,6 +45,12 @@ public class Viewer {
 	@Size(min = 4, max = 255)
 	private String email;
 
+	@Column(name = "ALTERNATIVE_EMAIL", length = 255, unique = true)
+	@Size(min = 4, max = 255)
+	private String alternativeEmail;
+
+
+
 	@Column(name = "PASSWORD", length = 100)
 	@NotNull
 	@Size(min = 4, max = 100)
@@ -290,5 +296,13 @@ public class Viewer {
 
 	public void setFacebookGmailId(String facebookGmailId) {
 		this.facebookGmailId = facebookGmailId;
+	}
+
+	public String getAlternativeEmail() {
+		return alternativeEmail;
+	}
+
+	public void setAlternativeEmail(String alternativeEmail) {
+		this.alternativeEmail = alternativeEmail;
 	}
 }
