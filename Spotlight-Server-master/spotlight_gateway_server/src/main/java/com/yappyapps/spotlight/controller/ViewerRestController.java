@@ -191,12 +191,12 @@ public class ViewerRestController {
                         result = jObj.toString();
                         return result;
                         //throw new InvalidParameterException("Email id not found for existing user "+viewer.getFacebookAndGmail());
-                    } else {
+                    } else if(!(byEmailFB.getFacebookGmailId().equals(viewer.getFacebookGmailId()) && byEmailFB.getEmail().equalsIgnoreCase(viewer.getEmail()))){
                         Viewer isEmailIdExist = iViewerRepository.findByEmail(viewer.getEmail());
                         if (isEmailIdExist != null) {
                             JSONObject jObj = new JSONObject();
                             jObj.put(IConstants.SUCCESS, false);
-                            jObj.put("message", "Already used this email id please provide another one  " + viewer.getEmail());
+                            jObj.put("message", "unauthorized user Please provide valid information");
                             JSONObject responseJObj = new JSONObject();
                             responseJObj.put(IConstants.RESPONSE, jObj);
                             result = jObj.toString();
@@ -218,10 +218,10 @@ public class ViewerRestController {
                     result = utils.constructSucessJSON(jObj);
                     return result;
                 } else {
-                    if (byEmailFB.getEmail() == null) {
+                    if (viewer.getEmail() == null) {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
-                        jObj.put("message", "Email id not found for new user " + viewer.getFacebookGmailId());
+                        jObj.put("message", "Email address not found for new user " + viewer.getFacebookGmailId());
                         JSONObject responseJObj = new JSONObject();
                         responseJObj.put(IConstants.RESPONSE, jObj);
                         result = jObj.toString();

@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull;
  * @since 2018-07-14
  */
 @Entity
-@Table(name = "DEFAULT_CONFIGURATION")
+	@Table(name = "DEFAULT_CONFIGURATION")
 public class DefaultConfiguration {
 	@Id
 	@Column(name = "ID")

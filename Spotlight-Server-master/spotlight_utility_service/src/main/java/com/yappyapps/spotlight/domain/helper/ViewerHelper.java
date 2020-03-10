@@ -52,6 +52,7 @@ public class ViewerHelper {
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : null);
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : null);
         viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : null);
+        viewerEntity.setFacebookGmailId(viewerReqObj.getFacebookGmailId()!=null ? viewerReqObj.getFacebookGmailId() : null);
         viewerEntity.setPassword(
                 viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword()) : null);
         viewerEntity.setCreatedOn(viewerReqObj.getCreatedOn() != null ? viewerReqObj.getCreatedOn() : currentTime);
