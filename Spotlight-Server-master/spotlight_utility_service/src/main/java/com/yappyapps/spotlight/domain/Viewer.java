@@ -45,7 +45,7 @@ public class Viewer {
 	@Size(min = 4, max = 255)
 	private String email;
 
-	@Column(name = "ALTERNATIVE_EMAIL", length = 255, unique = true)
+	@Column(name = "ALTERNATIVE_EMAIL", length = 255)
 	@Size(min = 4, max = 255)
 	private String alternativeEmail;
 
