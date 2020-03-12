@@ -149,7 +149,7 @@ public class BroadcasterInfoHelper {
             broadcasterInfoEntity.setGenre(genreSet);
         }
         broadcasterInfoEntity
-                .setBannerUrl(broadcasterInfoReqObj.getBannerUrl() != null ? broadcasterInfoReqObj.getBannerUrl()
+                .setBannerUrl(broadcasterInfoReqObj.getBannerUrl() != null && broadcasterInfoReqObj.getBannerUrl().length() > 0  ? broadcasterInfoReqObj.getBannerUrl()
                         : broadcasterInfoEntity.getBannerUrl());
         broadcasterInfoEntity
                 .setBiography(broadcasterInfoReqObj.getBiography() != null ? broadcasterInfoReqObj.getBiography()
