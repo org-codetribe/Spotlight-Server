@@ -864,8 +864,8 @@ public class ViewerService implements IViewerService {
                 }
             }
 
-            viewerHelper.populateViewer(viewerReqObj, viewerEntity.get());
-            Viewer viewer = viewerRepository.save(viewerEntity.get());
+          Viewer viewerEntity_ = viewerHelper.populateViewer(viewerReqObj, viewerEntity.get());
+            Viewer viewer = viewerRepository.save(viewerEntity_);
 
             SpotlightUser byEmail = spotlightUserRepository.findByEmail(viewer.getEmail());
             if (byEmail != null) {

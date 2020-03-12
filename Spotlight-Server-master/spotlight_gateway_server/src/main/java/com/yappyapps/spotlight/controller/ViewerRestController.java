@@ -182,7 +182,7 @@ public class ViewerRestController {
             if (viewer.getSocialLoginType().equalsIgnoreCase("FB")) {
                 Viewer byEmailFB = iViewerRepository.findByFacebookGmailId(viewer.getFacebookGmailId());
                 if (byEmailFB != null) {
-                    if (byEmailFB.getEmail() == null) {
+                    if (byEmailFB.getEmail() == null && byEmailFB.getEmail().trim().length() >0) {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
                         jObj.put("message", "Email id not found for existing user " + viewer.getFacebookGmailId());
@@ -218,7 +218,7 @@ public class ViewerRestController {
                     result = utils.constructSucessJSON(jObj);
                     return result;
                 } else {
-                    if (viewer.getEmail() == null) {
+                    if (viewer.getEmail() == null && viewer.getEmail().trim().length() > 0) {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
                         jObj.put("message", "Email address not found for new user " + viewer.getFacebookGmailId());
@@ -240,12 +240,13 @@ public class ViewerRestController {
                         }
 
                     }
+
                     String generatedPassword = Utils.generateRandomPassword(10);
-                    viewer.setEmail(viewer.getEmail());
-                    viewer.setUsername(viewer.getEmail());
                     viewer.setFacebookGmailId(viewer.getFacebookGmailId());
                     viewer.setPassword(passwordEncoder.encode(generatedPassword));
                     viewer.setChatName(new Date().getTime() + "".trim());
+                    viewer.setEmail(viewer.getEmail());
+                    viewer.setUsername(viewer.getEmail());
                     viewerService.createViewer(viewer);
                     UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(viewer.getUsername());
                     JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null);

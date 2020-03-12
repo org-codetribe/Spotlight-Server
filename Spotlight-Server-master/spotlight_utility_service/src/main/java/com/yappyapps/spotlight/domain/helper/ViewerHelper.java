@@ -78,12 +78,11 @@ public class ViewerHelper {
      */
     public Viewer populateViewer(Viewer viewerReqObj, Viewer viewerEntity) {
         Timestamp updatedTime = new Timestamp(System.currentTimeMillis());
-
         viewerEntity.setFname(viewerReqObj.getFname() != null ? viewerReqObj.getFname() : viewerEntity.getFname());
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : viewerEntity.getLname());
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : viewerEntity.getPhone());
         viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : viewerEntity.getAlternativeEmail());
-        viewerEntity.setEmail(viewerReqObj.getAlternativeEmail() != null ? viewerReqObj.getAlternativeEmail() : viewerEntity.getEmail());
+        viewerEntity.setAlternativeEmail(viewerReqObj.getAlternativeEmail() != null ? viewerReqObj.getAlternativeEmail() : viewerEntity.getEmail());
         viewerEntity.setProfilePicture(viewerReqObj.getProfilePicture() != null ? viewerReqObj.getProfilePicture() : viewerEntity.getProfilePicture());
         viewerEntity.setPassword(viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword())
                 : viewerEntity.getPassword());

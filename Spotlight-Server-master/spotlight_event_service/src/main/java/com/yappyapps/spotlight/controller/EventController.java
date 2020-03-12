@@ -263,6 +263,8 @@ public class EventController {
                     result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), Integer.valueOf(eventTypeId));
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), null);
+                } else if (viewerId != null && brodcasterId != null) {
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId),Integer.valueOf(brodcasterId),Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 } else {
                     result = eventService.getAllEvents(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 }
@@ -273,7 +275,10 @@ public class EventController {
                     result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
-                } else {
+                } else if(viewerId !=null && brodcasterId!=null){
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
+                }
+                else {
                     result = eventService.getAllEvents();
                 }
             }
