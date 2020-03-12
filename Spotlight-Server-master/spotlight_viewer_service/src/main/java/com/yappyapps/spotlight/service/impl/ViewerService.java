@@ -454,6 +454,7 @@ public class ViewerService implements IViewerService {
 
             for (Favorite favorite : favoriteList) {
 //				Optional<BroadcasterInfo> broadcasterInfoEntity = viewerRepository.find(favorite.getBroadcasterInfo());
+                if(favorite.getBroadcasterInfo()!=null)
                 broadcasterInfoList.add(favorite.getBroadcasterInfo());
             }
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {

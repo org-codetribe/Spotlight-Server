@@ -133,7 +133,7 @@ public class SpotlightUserService implements ISpotlightUserService {
 
         //List<Role> roles = spotlightUserReqObj.getUserRoles();
         //LOGGER.info("User Roles     ::::: " + roles);
-       // List<Role> roleRequestList = new ArrayList<>();
+        // List<Role> roleRequestList = new ArrayList<>();
         /*if(roles !=null && roles.size() > 0) {
 			for (Role role : roles) {
                 Optional<Role> byId = roleRepository.findById(role.getId());
@@ -522,17 +522,17 @@ public class SpotlightUserService implements ISpotlightUserService {
             // }
             // }
 
-            spotlightUserHelper.populateSpotlightUser(spotlightUserReqObj, spotlightUserEntity.get());
-            spotlightUserRepository.save(spotlightUserEntity.get());
+            SpotlightUser spotlightUser = spotlightUserHelper.populateSpotlightUser(spotlightUserReqObj, spotlightUserEntity.get());
+            spotlightUserRepository.save(spotlightUser);
+            JSONObject jObj = new JSONObject();
+            jObj.put(IConstants.USER, spotlightUserHelper.buildResponseObject(spotlightUser));
+            result = utils.constructSucessJSON(jObj);
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
         } catch (HibernateException | JpaSystemException sqlException) {
             throw new Exception(sqlException.getMessage());
         }
 
-        JSONObject jObj = new JSONObject();
-        jObj.put(IConstants.USER, spotlightUserHelper.buildResponseObject(spotlightUserEntity.get()));
-        result = utils.constructSucessJSON(jObj);
 
         return result;
     }

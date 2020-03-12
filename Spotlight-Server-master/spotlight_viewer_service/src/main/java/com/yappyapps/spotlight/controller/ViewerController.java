@@ -428,7 +428,7 @@ public class ViewerController {
         } catch (BusinessException e) {
             LOGGER.error(e.getMessage());
             throw e;
-        } catch (Exception e) {
+            } catch (Exception e) {
             LOGGER.error(e.getMessage());
             throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
         } finally {

@@ -81,8 +81,8 @@ public class ViewerHelper {
         viewerEntity.setFname(viewerReqObj.getFname() != null ? viewerReqObj.getFname() : viewerEntity.getFname());
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : viewerEntity.getLname());
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : viewerEntity.getPhone());
-        viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : viewerEntity.getAlternativeEmail());
-        viewerEntity.setAlternativeEmail(viewerReqObj.getAlternativeEmail() != null ? viewerReqObj.getAlternativeEmail() : viewerEntity.getEmail());
+        viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : viewerEntity.getEmail());
+        viewerEntity.setAlternativeEmail(viewerReqObj.getAlternativeEmail() != null ? viewerReqObj.getAlternativeEmail() : viewerEntity.getAlternativeEmail());
         viewerEntity.setProfilePicture(viewerReqObj.getProfilePicture() != null ? viewerReqObj.getProfilePicture() : viewerEntity.getProfilePicture());
         viewerEntity.setPassword(viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword())
                 : viewerEntity.getPassword());

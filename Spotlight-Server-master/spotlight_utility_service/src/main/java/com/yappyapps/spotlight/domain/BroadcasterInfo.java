@@ -51,11 +51,11 @@ public class BroadcasterInfo {
 	private String displayName;
 
 	@Field(termVector = TermVector.YES)
-	@Column(name = "BIOGRAPHY", columnDefinition = "Text")
+	@Column(name = "BIOGRAPHY", columnDefinition = "Text",length = 2000)
 	private String biography;
 
 	@Field(termVector = TermVector.YES)
-	@Column(name = "SHORT_DESC", length = 255)
+	@Column(name = "SHORT_DESC", length = 2000)
 	private String shortDesc;
 
 	@Column(name = "BANNER_URL", columnDefinition = "Text")
