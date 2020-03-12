@@ -174,7 +174,7 @@ public class ViewerRestController {
 		/*if(viewer.getEmail() != null && viewer.getPhone() != null) {
 			if (viewer.getEmail() == null)
 				utils.isEmptyOrNull(viewer.getEmail(), "Email");
-			if (viewer.getPhone() == null)
+			if (viewer.getPhone() == null)viewer = {Viewer@16272}
 				utils.isEmptyOrNull(viewer.getPhone(), "Phone");
 		}*/
         utils.isStatusValid(viewer.getStatus());
@@ -182,7 +182,7 @@ public class ViewerRestController {
             if (viewer.getSocialLoginType().equalsIgnoreCase("FB")) {
                 Viewer byEmailFB = iViewerRepository.findByFacebookGmailId(viewer.getFacebookGmailId());
                 if (byEmailFB != null) {
-                    if (byEmailFB.getEmail() == null && byEmailFB.getEmail().trim().length() >0) {
+                    if (byEmailFB.getEmail() == null || byEmailFB.getEmail() == "") {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
                         jObj.put("message", "Email id not found for existing user " + viewer.getFacebookGmailId());
@@ -218,7 +218,7 @@ public class ViewerRestController {
                     result = utils.constructSucessJSON(jObj);
                     return result;
                 } else {
-                    if (viewer.getEmail() == null && viewer.getEmail().trim().length() > 0) {
+                    if (viewer.getEmail() == null || viewer.getEmail() == "") {
                         JSONObject jObj = new JSONObject();
                         jObj.put(IConstants.SUCCESS, false);
                         jObj.put("message", "Email address not found for new user " + viewer.getFacebookGmailId());
