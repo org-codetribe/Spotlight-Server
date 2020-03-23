@@ -612,21 +612,21 @@ public class EventController {
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(value = {"/broadcaster/{broadcasterId}/{viewerId}","/broadcaster/{broadcasterId}"}, method = RequestMethod.GET, produces = {
+    @RequestMapping(value = {"/broadcaster/{broadcasterId}"}, method = RequestMethod.GET, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String getEventsByBroadcaster(@RequestParam(value = "limit", required = false) String limit,
                                   @RequestParam(value = "offset", required = false) String offset,
                                   @RequestParam(value = "direction", required = false) String direction,
                                   @RequestParam(value = "orderBy", required = false) String orderBy,
-                                  @PathVariable(value = "broadcasterId") String broadcasterId,  @PathVariable(value = "viewerId") String viewerId)
+                                  @PathVariable(value = "broadcasterId") String broadcasterId,  @PathVariable(value = "viewerId",required = false) String viewerId)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "getEventsByBroadcaster";
         LOGGER.info("EventController :: " + operation + " :: broadcasterId :: " + broadcasterId + " :: limit :: "
                 + limit + " :: offset :: " + offset + " :: direction :: " + direction + " :: orderBy :: " + orderBy);
         long startTime = System.currentTimeMillis();
         utils.isEmptyOrNull(broadcasterId, "broadcasterId");
-        utils.isEmptyOrNull(viewerId, "viewerId");
+        //utils.isEmptyOrNull(viewerId, "viewerId");
         String result = "";
 
         try {
@@ -647,7 +647,7 @@ public class EventController {
                     result = eventService.getEventsByBroadcaster(Integer.parseInt(viewerId), Integer.parseInt(broadcasterId));
                 }
                 else if (broadcasterId != null) {
-                    result = eventService.getEventsByBroadcaster(Integer.parseInt(viewerId), Integer.parseInt(broadcasterId));
+                    result = eventService.getEventsByBroadcaster(null, Integer.parseInt(broadcasterId));
                 } else {
                     result = eventService.getAllEvents();
                 }
