@@ -612,7 +612,7 @@ public class EventController {
      * @throws ResourceNotFoundException ResourceNotFoundException
      * @throws BusinessException         BusinessException
      */
-    @RequestMapping(value = "/broadcaster/{broadcasterId}/{viewerId}", method = RequestMethod.GET, produces = {
+    @RequestMapping(value = {"/broadcaster/{broadcasterId}/{viewerId}","/broadcaster/{broadcasterId}"}, method = RequestMethod.GET, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String getEventsByBroadcaster(@RequestParam(value = "limit", required = false) String limit,
@@ -644,6 +644,9 @@ public class EventController {
                 }
             } else {
                 if (broadcasterId != null && viewerId !=null) {
+                    result = eventService.getEventsByBroadcaster(Integer.parseInt(viewerId), Integer.parseInt(broadcasterId));
+                }
+                else if (broadcasterId != null) {
                     result = eventService.getEventsByBroadcaster(Integer.parseInt(viewerId), Integer.parseInt(broadcasterId));
                 } else {
                     result = eventService.getAllEvents();
