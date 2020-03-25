@@ -1,10 +1,7 @@
 package com.yappyapps.spotlight.service.impl;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.sql.Timestamp;
+import java.util.*;
 
 import com.yappyapps.spotlight.domain.*;
 import com.yappyapps.spotlight.repository.*;
@@ -69,6 +66,13 @@ public class ViewerService implements IViewerService {
      */
     @Autowired
     private IFavoriteRepository favoriteRepository;
+
+
+    @Autowired
+    private IWalletRepository walletRepository;
+
+    @Autowired
+    IOrderRepository orderRepository;
 
     /**
      * IViewerEventRepository dependency will be automatically injected.
@@ -454,8 +458,8 @@ public class ViewerService implements IViewerService {
 
             for (Favorite favorite : favoriteList) {
 //				Optional<BroadcasterInfo> broadcasterInfoEntity = viewerRepository.find(favorite.getBroadcasterInfo());
-                if(favorite.getBroadcasterInfo()!=null)
-                broadcasterInfoList.add(favorite.getBroadcasterInfo());
+                if (favorite.getBroadcasterInfo() != null)
+                    broadcasterInfoList.add(favorite.getBroadcasterInfo());
             }
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
@@ -865,7 +869,7 @@ public class ViewerService implements IViewerService {
                 }
             }
 
-          Viewer viewerEntity_ = viewerHelper.populateViewer(viewerReqObj, viewerEntity.get());
+            Viewer viewerEntity_ = viewerHelper.populateViewer(viewerReqObj, viewerEntity.get());
             Viewer viewer = viewerRepository.save(viewerEntity_);
 
             SpotlightUser byEmail = spotlightUserRepository.findByEmail(viewer.getEmail());
@@ -1011,6 +1015,64 @@ public class ViewerService implements IViewerService {
         JSONObject jObj = new JSONObject();
         result = utils.constructSucessJSON(jObj);
 
+        return result;
+    }
+
+
+    public String orderEvent(Integer viewerId, Integer eventId, Order orderReqObj)
+            throws ResourceNotFoundException, AlreadyExistException, BusinessException, Exception {
+        String result = null;
+
+        Optional<Viewer> viewerEntity = null;
+        Optional<Event> eventEntity = null;
+        Wallet walletEntity = null;
+        try {
+            viewerEntity = viewerRepository.findById(viewerId);
+            if (!viewerEntity.isPresent()) {
+                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            eventEntity = eventRepository.findById(eventId);
+            if (!eventEntity.isPresent()) {
+                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
+            Double minusAmount = null;
+            if (walletEntity != null) {
+                if (walletEntity.getAmount() != null) {
+                    if (walletEntity.getAmount() >= eventEntity.get().getActualPrice()) {
+                        minusAmount = (walletEntity.getAmount() - eventEntity.get().getActualPrice());
+                        walletEntity.setAmount(minusAmount);
+                        walletRepository.save(walletEntity);
+                    } else {
+                        throw new ResourceNotFoundException("Insufficient Funds !");
+                    }
+                } else {
+                    throw new ResourceNotFoundException("wallet amount can not be null or empty !");
+                }
+            } else {
+                throw new ResourceNotFoundException("Wallet not exist yet !");
+            }
+            Order order = new Order();
+            order.setQuantity(orderReqObj.getQuantity());
+            order.setEventId(eventEntity.get().getId());
+            order.setViewerId(viewerEntity.get().getId());
+            order.setPrice(eventEntity.get().getActualPrice());
+            order.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+            order.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+            order = orderRepository.save(order);
+
+            JSONObject jObj = new JSONObject();
+            JSONObject viewerObj = new JSONObject();
+            viewerObj.put("message", "order completed successfully !");
+            //  viewerObj.put("Order",order);
+            jObj.put("Order", viewerObj);
+            result = utils.constructSucessJSON(jObj);
+
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
         return result;
     }
 

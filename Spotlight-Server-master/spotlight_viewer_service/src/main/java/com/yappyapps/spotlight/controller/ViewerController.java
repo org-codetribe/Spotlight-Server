@@ -1,6 +1,9 @@
 package com.yappyapps.spotlight.controller;
 
+import com.yappyapps.spotlight.domain.Order;
+import com.yappyapps.spotlight.domain.Wallet;
 import com.yappyapps.spotlight.util.AmazonClient;
+import io.swagger.models.auth.In;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,7 +431,7 @@ public class ViewerController {
         } catch (BusinessException e) {
             LOGGER.error(e.getMessage());
             throw e;
-            } catch (Exception e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
             throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
         } finally {
@@ -727,8 +730,8 @@ public class ViewerController {
     @RequestMapping(value = "/profile", method = RequestMethod.PUT, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
-    String updateViewerProfile(@RequestParam(value = "request",required = false) String requestBody,
-                               @RequestHeader("Content-Type") String contentType,@RequestPart(value = "profilePicture", required = false) MultipartFile[] image)
+    String updateViewerProfile(@RequestParam(value = "request", required = false) String requestBody,
+                               @RequestHeader("Content-Type") String contentType, @RequestPart(value = "profilePicture", required = false) MultipartFile[] image)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "updateViewerProfile";
         LOGGER.info("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
@@ -949,6 +952,46 @@ public class ViewerController {
 
         try {
             result = viewerService.manageFavoriteBroadcaster(favorite, Boolean.valueOf(favoriteFlag));
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (AlreadyExistException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime),
+                    requestBody.length());
+        }
+
+        return result;
+    }
+
+
+    @RequestMapping(value = "/order/event/{viewerId}/{eventId}", method = RequestMethod.POST, consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {
+            MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String orderEventByUser(@RequestBody String requestBody, @PathVariable("viewerId") String viewerId, @PathVariable("eventId") String eventId,
+                            @RequestHeader("Content-Type") String contentType)
+            throws InvalidParameterException, AlreadyExistException, BusinessException {
+        String operation = "orderEventByUser";
+        LOGGER.debug("ViewerController :: " + operation + " :: RequestBody :: " + requestBody + " :: viewerId :: " + viewerId + " :: contentType :: "
+                + contentType);
+        long startTime = System.currentTimeMillis();
+        String result = "";
+        utils.isBodyJSONObject(requestBody);
+        Order order = gson.fromJson(requestBody, Order.class);
+        utils.isEmptyOrNull(eventId, "Event Id");
+        utils.isIntegerGreaterThanZero(eventId, "Event Id");
+        utils.isEmptyOrNull(viewerId, "Viewer Id");
+        utils.isIntegerGreaterThanZero(viewerId, "Viewer Id");
+        try {
+            result = viewerService.orderEvent(Integer.valueOf(viewerId), Integer.valueOf(eventId), order);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
             throw e;

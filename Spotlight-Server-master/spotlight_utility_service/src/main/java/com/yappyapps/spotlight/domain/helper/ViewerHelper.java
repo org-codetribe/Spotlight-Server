@@ -3,6 +3,8 @@ package com.yappyapps.spotlight.domain.helper;
 import java.sql.Timestamp;
 import java.util.List;
 
+import com.yappyapps.spotlight.domain.Event;
+import com.yappyapps.spotlight.domain.Order;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -93,6 +95,14 @@ public class ViewerHelper {
         LOGGER.debug("Viewer Entity populated from Requested Viewer Object ");
         return viewerEntity;
     }
+
+
+
+
+
+
+
+
 
     /**
      * This method is used to build the response object.

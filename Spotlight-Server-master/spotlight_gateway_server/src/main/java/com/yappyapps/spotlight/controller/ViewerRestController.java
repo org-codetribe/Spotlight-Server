@@ -5,10 +5,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.SpotlightUser;
+import com.yappyapps.spotlight.domain.Wallet;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
 import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
+import com.yappyapps.spotlight.repository.IWalletRepository;
 import com.yappyapps.spotlight.service.ISpotlightUserService;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ import com.yappyapps.spotlight.util.Utils;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
 
@@ -84,6 +87,9 @@ public class ViewerRestController {
 
     @Autowired
     private IViewerRepository iViewerRepository;
+
+    @Autowired
+    private IWalletRepository walletRepository;
 
     @Autowired
     private ISpotlightUserRepository iSpotlightUserRepository;
@@ -191,7 +197,7 @@ public class ViewerRestController {
                         result = jObj.toString();
                         return result;
                         //throw new InvalidParameterException("Email id not found for existing user "+viewer.getFacebookAndGmail());
-                    } else if(!(byEmailFB.getFacebookGmailId().equals(viewer.getFacebookGmailId()) && byEmailFB.getEmail().equalsIgnoreCase(viewer.getEmail()))){
+                    } else if (!(byEmailFB.getFacebookGmailId().equals(viewer.getFacebookGmailId()) && byEmailFB.getEmail().equalsIgnoreCase(viewer.getEmail()))) {
                         Viewer isEmailIdExist = iViewerRepository.findByEmail(viewer.getEmail());
                         if (isEmailIdExist != null) {
                             JSONObject jObj = new JSONObject();
@@ -213,6 +219,16 @@ public class ViewerRestController {
                     }
                     UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(byEmailFB.getUsername());
                     JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, spotlightUser);
+                    Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
+                    Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
+                    if (walletRep == null) {
+                        Wallet wallet = new Wallet();
+                        wallet.setAmount(10000.00);
+                        wallet.setViewerId(viewer1.getId());
+                        wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                        wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                        walletRepository.save(wallet);
+                    }
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
                     result = utils.constructSucessJSON(jObj);
@@ -248,7 +264,19 @@ public class ViewerRestController {
                     viewer.setEmail(viewer.getEmail());
                     viewer.setUsername(viewer.getEmail());
                     viewerService.createViewer(viewer);
+
                     UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(viewer.getUsername());
+                    // Viewer viewer1 = (Viewer)userDetailsbyEmail;
+                    Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
+                    Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
+                    if (walletRep == null) {
+                        Wallet wallet = new Wallet();
+                        wallet.setAmount(10000.00);
+                        wallet.setViewerId(viewer1.getId());
+                        wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                        wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                        walletRepository.save(wallet);
+                    }
                     JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
@@ -302,6 +330,16 @@ public class ViewerRestController {
                         spotlightUser.setId(broadcasterInfo.getId());
                     }
                     UserDetails userDetails = viewerService.loadUserByUsername(byEmail.getUsername());
+                    Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
+                    Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
+                    if (walletRep == null) {
+                        Wallet wallet = new Wallet();
+                        wallet.setAmount(10000.00);
+                        wallet.setViewerId(viewer1.getId());
+                        wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                        wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                        walletRepository.save(wallet);
+                    }
                     JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails, spotlightUser);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
@@ -314,6 +352,19 @@ public class ViewerRestController {
 
                     //	Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
                     UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(viewer.getUsername());
+                    //Viewer viewer1 = (Viewer)userDetailsbyEmail;
+                    Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
+                    Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
+                    if (walletRep == null) {
+                        Wallet wallet = new Wallet();
+                        wallet.setAmount(10000.00);
+                        wallet.setViewerId(viewer1.getId());
+                        wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                        wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                        walletRepository.save(wallet);
+                    }
+
+
                     JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);

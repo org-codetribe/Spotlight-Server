@@ -4,8 +4,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import com.yappyapps.spotlight.domain.*;
-import com.yappyapps.spotlight.repository.IBroadcasterInfoRepository;
-import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
+import com.yappyapps.spotlight.repository.*;
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -28,8 +27,6 @@ import com.yappyapps.spotlight.exception.AlreadyExistException;
 import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 import com.yappyapps.spotlight.exception.SpotlightAuthenticationException;
-import com.yappyapps.spotlight.repository.IViewerRepository;
-import com.yappyapps.spotlight.repository.IViewerSessionRepository;
 import com.yappyapps.spotlight.security.JwtAuthenticationRequest;
 import com.yappyapps.spotlight.security.JwtViewerFactory;
 import com.yappyapps.spotlight.security.ViewerUsernamePasswordAuthenticationToken;
@@ -63,6 +60,10 @@ public class ViewerService implements IViewerService {
      */
     @Autowired
     private IViewerRepository viewerRepository;
+
+
+    @Autowired
+    private IWalletRepository walletRepository;
 
     /**
      * IViewerSessionRepository dependency will be automatically injected.
@@ -250,6 +251,16 @@ public class ViewerService implements IViewerService {
                 spotlightUser.setId(broadcasterInfo.getId());
             }
 
+            Viewer viewer1 = viewerRepository.findByEmail(viewer.get().getEmail());
+            Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
+            if (walletRep == null) {
+                Wallet wallet = new Wallet();
+                wallet.setAmount(10000.00);
+                wallet.setViewerId(viewer1.getId());
+                wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                walletRepository.save(wallet);
+            }
 
         }
 

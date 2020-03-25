@@ -218,7 +218,7 @@ public class BroadcasterInfoHelper {
     }
 
     /**
-     * This method is used to build the response object.
+     * This method is used to buil  d the response object.
      *
      * @param broadcasterInfoList : List&lt;BroadcasterInfo&gt;
      * @param viewer              : Viewer
