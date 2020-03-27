@@ -53,6 +53,10 @@ public class ViewerHelper {
     @Autowired
     IViewerRepository viewerRepository;
 
+    @Autowired
+    private EventHelper eventHelper;
+
+
     /**
      * This method is used to create the Viewer Entity by copying properties from
      * requested Bean
@@ -155,13 +159,13 @@ public class ViewerHelper {
         if (order.getViewerId() != null) {
 
             Viewer viewer = viewerRepository.getOne(order.getId());
-            viewerObj.put("viewer", viewer);
+            viewerObj.put("viewer", buildResponseObject(viewer));
 
         }
         if (order.getEventId() != null) {
 
             Optional<Event> event = eventRepository.findById(order.getId());
-            viewerObj.put("event", event.get());
+            viewerObj.put("event", eventHelper.buildResponseObject(event.get(), null, null, null));
 
         }
 
