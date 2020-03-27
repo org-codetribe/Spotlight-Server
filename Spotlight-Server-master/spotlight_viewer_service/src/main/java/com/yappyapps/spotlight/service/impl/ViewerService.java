@@ -58,6 +58,9 @@ public class ViewerService implements IViewerService {
     private IViewerRepository viewerRepository;
 
     @Autowired
+    IOrderRepository orderRepository;
+
+    @Autowired
     private ISpotlightUserRepository spotlightUserRepository;
 
     /**
@@ -71,8 +74,6 @@ public class ViewerService implements IViewerService {
     @Autowired
     private IWalletRepository walletRepository;
 
-    @Autowired
-    IOrderRepository orderRepository;
 
     /**
      * IViewerEventRepository dependency will be automatically injected.
@@ -427,6 +428,28 @@ public class ViewerService implements IViewerService {
 
         JSONObject jObj = new JSONObject();
         jObj.put(IConstants.VIEWER, viewerHelper.buildResponseObject(viewer.get()));
+        result = utils.constructSucessJSON(jObj);
+        return result;
+    }
+
+    @Override
+    public String getOrderByViewer(Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+        List<Order> orders = null;
+
+        try {
+            orders = orderRepository.findByViewerId(viewerId);
+            if (orders == null && orders.size() == 0)
+                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.VIEWER, viewerHelper.buildResponseObjectForOrders(orders));
         result = utils.constructSucessJSON(jObj);
         return result;
     }

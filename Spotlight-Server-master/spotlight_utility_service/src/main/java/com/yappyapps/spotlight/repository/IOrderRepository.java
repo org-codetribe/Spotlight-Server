@@ -18,6 +18,6 @@ import java.util.List;
  */
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, Integer> {
-
+List<Order> findByViewerId(Integer viewerId);
 
 }

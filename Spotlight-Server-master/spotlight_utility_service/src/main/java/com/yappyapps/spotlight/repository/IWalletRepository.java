@@ -19,5 +19,6 @@ import java.util.List;
 @Repository
 public interface IWalletRepository extends JpaRepository<Wallet, Integer> {
 
- Wallet findByViewerId(Integer integer);
+     Wallet findByViewerId(Integer integer);
+
 }

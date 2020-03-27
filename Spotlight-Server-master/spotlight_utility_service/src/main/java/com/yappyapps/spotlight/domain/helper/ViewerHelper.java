@@ -2,9 +2,14 @@ package com.yappyapps.spotlight.domain.helper;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 import com.yappyapps.spotlight.domain.Event;
 import com.yappyapps.spotlight.domain.Order;
+import com.yappyapps.spotlight.domain.Wallet;
+import com.yappyapps.spotlight.repository.IEventRepository;
+import com.yappyapps.spotlight.repository.IViewerRepository;
+import com.yappyapps.spotlight.repository.IWalletRepository;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,6 +44,15 @@ public class ViewerHelper {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private IWalletRepository walletRepository;
+
+    @Autowired
+    IEventRepository eventRepository;
+
+    @Autowired
+    IViewerRepository viewerRepository;
+
     /**
      * This method is used to create the Viewer Entity by copying properties from
      * requested Bean
@@ -54,7 +68,7 @@ public class ViewerHelper {
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : null);
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : null);
         viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : null);
-        viewerEntity.setFacebookGmailId(viewerReqObj.getFacebookGmailId()!=null ? viewerReqObj.getFacebookGmailId() : null);
+        viewerEntity.setFacebookGmailId(viewerReqObj.getFacebookGmailId() != null ? viewerReqObj.getFacebookGmailId() : null);
         viewerEntity.setPassword(
                 viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword()) : null);
         viewerEntity.setCreatedOn(viewerReqObj.getCreatedOn() != null ? viewerReqObj.getCreatedOn() : currentTime);
@@ -97,13 +111,6 @@ public class ViewerHelper {
     }
 
 
-
-
-
-
-
-
-
     /**
      * This method is used to build the response object.
      *
@@ -126,26 +133,70 @@ public class ViewerHelper {
         viewerObj.put("username", viewer.getUsername());
         viewerObj.put("profilePicture", viewer.getProfilePicture());
         viewerObj.put("chatName", viewer.getChatName());
+        if (viewer != null && viewer.getId() != null) {
+            Wallet wallet = walletRepository.findByViewerId(viewer.getId());
+            if (wallet != null)
+                viewerObj.put("wallet", wallet.getAmount());
+        }
+
 
         LOGGER.debug("Viewer Response Object built for Viewer Object id :::: " + viewer.getId());
         return viewerObj;
 
     }
 
+
+    public JSONObject buildResponseObjectForOrder(Order order) throws JSONException {
+        JSONObject viewerObj = new JSONObject();
+        viewerObj.put("id", order.getId());
+        viewerObj.put("eventId", order.getEventId());
+        viewerObj.put("price", order.getPrice());
+        viewerObj.put("createdOn", order.getCreatedOn());
+        if (order.getViewerId() != null) {
+
+            Viewer viewer = viewerRepository.getOne(order.getId());
+            viewerObj.put("viewer", viewer);
+
+        }
+        if (order.getEventId() != null) {
+
+            Optional<Event> event = eventRepository.findById(order.getId());
+            viewerObj.put("event", event.get());
+
+        }
+
+
+        LOGGER.debug("Viewer Response Object built for Order Object id :::: " + order.getId());
+        return viewerObj;
+
+    }
+
+
     /**
      * This method is used to build the response object.
      *
-     * @param viewerrList : List&lt;Viewer&gt;
+     * @param viewerList : List&lt;Viewer&gt;
      * @return JSONArray: viewerArr
      * @throws JSONException JSONException
      */
-    public JSONArray buildResponseObject(List<Viewer> viewerrList) throws JSONException {
+    public JSONArray buildResponseObject(List<Viewer> viewerList) throws JSONException {
         JSONArray viewerArr = new JSONArray();
-        for (Viewer viewer : viewerrList) {
+        for (Viewer viewer : viewerList) {
             JSONObject viewerObj = buildResponseObject(viewer);
             viewerArr.put(viewerObj);
         }
         LOGGER.debug("Viewer Response Array built with size :::: " + viewerArr.length());
+        return viewerArr;
+    }
+
+
+    public JSONArray buildResponseObjectForOrders(List<Order> orderList) throws JSONException {
+        JSONArray viewerArr = new JSONArray();
+        for (Order order : orderList) {
+            JSONObject viewerObj = buildResponseObjectForOrder(order);
+            viewerArr.put(viewerObj);
+        }
+        LOGGER.debug("Orders Response Array built with size :::: " + viewerArr.length());
         return viewerArr;
     }
 

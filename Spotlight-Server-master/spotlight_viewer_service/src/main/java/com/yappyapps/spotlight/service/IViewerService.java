@@ -100,6 +100,8 @@ public interface IViewerService {
 
     public String getViewer(Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
+    public String getOrderByViewer(Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
+
 
     /**
      * This method is used to get all Favorites Broadcasters with paging and orderBy.

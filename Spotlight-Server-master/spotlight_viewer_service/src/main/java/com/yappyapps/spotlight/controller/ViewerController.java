@@ -1013,4 +1013,36 @@ public class ViewerController {
     }
 
 
+    @RequestMapping(value = "/orders/viewerId/{viewerId}", method = RequestMethod.GET, produces = {
+            MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String getOrderByViewer(@PathVariable("viewerId") String viewerId)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "getOrderByViewer";
+        LOGGER.info("ViewerController :: " + operation + " :: viewerId :: " + viewerId);
+        long startTime = System.currentTimeMillis();
+        String result = "";
+        utils.isEmptyOrNull(viewerId, "viewerId");
+        utils.isIntegerGreaterThanZero(viewerId, "viewerId");
+        try {
+            result = viewerService.getOrderByViewer(Integer.parseInt(viewerId));
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
+
+
 }
