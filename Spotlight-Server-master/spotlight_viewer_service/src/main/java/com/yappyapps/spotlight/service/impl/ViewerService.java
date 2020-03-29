@@ -1099,5 +1099,41 @@ public class ViewerService implements IViewerService {
         return result;
     }
 
+    @Override
+    public String orderEvent(List<Viewer> viewerId, Integer eventId, Order orderReqObj, List<String> inValidEmails) throws ResourceNotFoundException, AlreadyExistException, BusinessException, Exception {
+        String result = null;
+        Optional<Event> eventEntity = null;
+        try {
+            eventEntity = eventRepository.findById(eventId);
+            if (!eventEntity.isPresent()) {
+                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            for (Viewer viewer : viewerId) {
+                Order order = new Order();
+                order.setQuantity(orderReqObj.getQuantity());
+                order.setEventId(eventEntity.get().getId());
+                order.setViewerId(viewer.getId());
+                order.setPrice(0.0f);
+                order.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+                order.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+                order = orderRepository.save(order);
+            }
+
+            JSONObject jObj = new JSONObject();
+            JSONObject viewerObj = new JSONObject();
+            viewerObj.put("message", "order completed successfully !");
+            if (inValidEmails.size() > 0)
+                viewerObj.put("NotExistEmails", inValidEmails.toString());
+            jObj.put("Order", viewerObj);
+            result = utils.constructSucessJSON(jObj);
+
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new AlreadyExistException(IConstants.ALREADY_EXIST_MESSAGE);
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+        return result;
+    }
+
 
 }

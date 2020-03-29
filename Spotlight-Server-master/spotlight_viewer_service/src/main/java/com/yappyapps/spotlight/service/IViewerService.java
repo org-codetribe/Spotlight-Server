@@ -8,12 +8,16 @@ import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.InvalidParameterException;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 
+import java.util.List;
+
 /**
  * The IViewerService interface declares
  * all the operations to act upon Spotlight Users
  *
  * @author Naveen Goswami
  * @version 1.0
+ * @author ADMIN
+ * @author ADMIN
  * @author ADMIN
  * @since 2018-07-14
  */
@@ -347,6 +351,10 @@ public interface IViewerService {
      */
     public String orderEvent(Integer viewerId, Integer eventId, Order orderReqObj)
             throws ResourceNotFoundException, AlreadyExistException, BusinessException, Exception;
+
+    public String orderEvent(List<Viewer> viewerId, Integer eventId, Order orderReqObj, List<String> inValidEmails)
+            throws ResourceNotFoundException, AlreadyExistException, BusinessException, Exception;
+
 
     public String getPurchasedEvents(Integer viewerId, Integer limit, Integer offset, String direction,
                                      String orderBy) throws ResourceNotFoundException, BusinessException, Exception;

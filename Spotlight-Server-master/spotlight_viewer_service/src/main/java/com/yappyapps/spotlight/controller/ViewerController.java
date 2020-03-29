@@ -1,7 +1,10 @@
 package com.yappyapps.spotlight.controller;
 
+import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import com.yappyapps.spotlight.domain.Order;
 import com.yappyapps.spotlight.domain.Wallet;
+import com.yappyapps.spotlight.repository.IViewerRepository;
 import com.yappyapps.spotlight.util.AmazonClient;
 import io.swagger.models.auth.In;
 import org.json.JSONObject;
@@ -24,8 +27,8 @@ import com.yappyapps.spotlight.util.MeteringService;
 import com.yappyapps.spotlight.util.Utils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -65,6 +68,9 @@ public class ViewerController {
      */
     @Autowired
     private IViewerService viewerService;
+
+    @Autowired
+    private IViewerRepository viewerRepository;
 
     /**
      * Gson dependency will be automatically injected.
@@ -1045,4 +1051,135 @@ public class ViewerController {
     }
 
 
+    @RequestMapping(value = "/orders/no-charge/event/{eventId}", method = RequestMethod.POST, consumes = {MediaType.MULTIPART_FORM_DATA_VALUE}, produces = {
+            MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String orderEventByAdmin(@PathVariable("eventId") String eventId,
+                             @RequestHeader("Content-Type") String contentType, @RequestPart("emailData") MultipartFile cvsFileWithEmails)
+            throws InvalidParameterException, AlreadyExistException, BusinessException {
+        String operation = "orderEventByUser";
+        LOGGER.debug("orderEventByAdmin :: " + operation + " :: RequestBody :: " + eventId + " :: eventId :: " + eventId + " :: contentType :: "
+                + contentType);
+        long startTime = System.currentTimeMillis();
+        String result = "";
+        utils.isEmptyOrNull(eventId, "Event Id");
+        utils.isIntegerGreaterThanZero(eventId, "Event Id");
+
+        if (cvsFileWithEmails.isEmpty()) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("message", "FIle should not be empty !");
+            jsonObject.put("success", false);
+            result = jsonObject.toString();
+            return result;
+        }
+        if (cvsFileWithEmails.getOriginalFilename().split("\\.")[1].trim().equalsIgnoreCase("cvs")) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("message", "File should be CSV only !");
+            jsonObject.put("success", false);
+            result = jsonObject.toString();
+            return result;
+        }
+
+
+        List<String> emails = new ArrayList<String>();
+
+        try {
+
+            try {
+
+                // Create an object of filereader
+                // class with CSV file as a parameter.
+                //File convFile = new File( cvsFileWithEmails.getOriginalFilename() );
+                //FileReader filereader = new FileReader(convFile.getAbsoluteFile());
+
+                Reader reader = new InputStreamReader(cvsFileWithEmails.getInputStream());
+
+                // create csvReader object passing
+                // file reader as a parameter
+                CSVReader csvReader = new CSVReaderBuilder(reader).withSkipLines(1).build();
+
+                String[] nextRecord;
+
+                // we are going to read data line by line
+                while ((nextRecord = csvReader.readNext()) != null) {
+
+                    if (nextRecord.length == 2) {
+                        for (int cell_ = 0; nextRecord.length > cell_; cell_++) {
+                            if (cell_ == 1) {
+                                emails.add(nextRecord[cell_]);
+                                //  System.out.print(nextRecord[cell_] + "\t");
+                            }
+                        }
+
+                    } else {
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("message", "CSV file should have only 2 columns !");
+                        jsonObject.put("success", false);
+                        result = jsonObject.toString();
+                        return result;
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("message", "emailData (No such file or directory) !");
+                jsonObject.put("success", false);
+                result = jsonObject.toString();
+                return result;
+            } catch (Exception e) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("message", "Something went wrong in file processing !");
+                jsonObject.put("success", false);
+                result = jsonObject.toString();
+                return result;
+            }
+            Set<Viewer> viewerEmailExistList = new HashSet<>();
+            List<String> nonViewerEmailExistList = new ArrayList<>();
+            for (String email : emails) {
+                Viewer viewer = viewerRepository.findByEmail(email);
+                if (viewer != null) {
+                    viewerEmailExistList.add(viewer);
+                } else {
+                    nonViewerEmailExistList.add(email);
+                }
+            }
+            if (viewerEmailExistList.size() == 0) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("message", "In file not valid email exist or empty file  !");
+                jsonObject.put("success", false);
+                if (nonViewerEmailExistList.size() > 0)
+                    jsonObject.put("NotExistEmails", nonViewerEmailExistList.toString());
+                result = jsonObject.toString();
+                return result;
+            }
+            Order order = new Order();
+            order.setQuantity(1);
+
+            List<Viewer> aList = new ArrayList<Viewer>(viewerEmailExistList.size());
+            for (Viewer viewer : viewerEmailExistList)
+                aList.add(viewer);
+
+            result = viewerService.orderEvent(aList, Integer.valueOf(eventId), order, nonViewerEmailExistList);
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (AlreadyExistException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime),
+                    0);
+        }
+
+        return result;
+    }
+
+
 }
+
+

@@ -4,6 +4,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -25,7 +26,8 @@ public class Order implements Serializable {
     @Column(name = "QUANTITY")
     private Integer quantity;
 
-
+    @Transient
+    private List<String> emails;
     @Column(name = "CREATED_ON", columnDefinition = "TimeStamp")
     @NotNull
     private Timestamp createdOn;
@@ -87,5 +89,13 @@ public class Order implements Serializable {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public List<String> getEmails() {
+        return emails;
+    }
+
+    public void setEmails(List<String> emails) {
+        this.emails = emails;
     }
 }
