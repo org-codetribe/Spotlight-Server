@@ -300,7 +300,7 @@ public class EventHelper {
 	 * @return JSONObject: eventObj
 	 * 
 	 */
-	public JSONObject buildResponseObject(Event event, Viewer viewer, Boolean deepEventTypeFlag,EventType eventType_) throws JSONException {
+	public JSONObject buildResponseObject(Event event, Viewer viewer, boolean deepEventTypeFlag,EventType eventType_) throws JSONException {
 		JSONObject eventObj = new JSONObject();
 		eventObj.put("id", event.getId());
 		eventObj.put("actualPrice", event.getActualPrice());

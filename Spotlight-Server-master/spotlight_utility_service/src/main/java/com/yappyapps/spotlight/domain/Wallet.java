@@ -17,6 +17,7 @@ public class Wallet implements Serializable {
     @Column(name = "VIEWER_ID")
     private Integer viewerId;
 
+
     private Date createdOn;
 
     private Date updatedOn;

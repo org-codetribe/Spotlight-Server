@@ -4,9 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
-import com.yappyapps.spotlight.domain.Event;
-import com.yappyapps.spotlight.domain.Order;
-import com.yappyapps.spotlight.domain.Wallet;
+import com.yappyapps.spotlight.domain.*;
 import com.yappyapps.spotlight.repository.IEventRepository;
 import com.yappyapps.spotlight.repository.IViewerRepository;
 import com.yappyapps.spotlight.repository.IWalletRepository;
@@ -19,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.yappyapps.spotlight.domain.Viewer;
 import com.yappyapps.spotlight.util.IConstants;
 import com.yappyapps.spotlight.util.Utils;
 
@@ -157,15 +154,14 @@ public class ViewerHelper {
         viewerObj.put("price", order.getPrice());
         viewerObj.put("createdOn", order.getCreatedOn());
         if (order.getViewerId() != null) {
-
-            Viewer viewer = viewerRepository.getOne(order.getId());
-            viewerObj.put("viewer", buildResponseObject(viewer));
+            Optional<Viewer> viewer = viewerRepository.findById(order.getViewerId());
+            viewerObj.put("viewer", buildResponseObject(viewer.get()));
 
         }
         if (order.getEventId() != null) {
 
             Optional<Event> event = eventRepository.findById(order.getId());
-            viewerObj.put("event", eventHelper.buildResponseObject(event.get(), null, null, null));
+            viewerObj.put("event", eventHelper.buildResponseObject(event.get(), null, false, new EventType()));
 
         }
 
