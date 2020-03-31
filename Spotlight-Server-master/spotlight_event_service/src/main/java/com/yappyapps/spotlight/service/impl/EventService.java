@@ -371,6 +371,33 @@ public class EventService implements IEventService {
 
     }
 
+
+    @Override
+    public String getOnlyAllUpcomingEvent() throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+
+        List<Event> eventList = null;
+        try {
+            eventList = (List<Event>) eventRepository.findAllByCreatedOnGreaterThanEqual(new Timestamp(System.currentTimeMillis()));
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+//		if(eventList.size() <= 0) {
+//			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+//		}
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+
+    }
+
     /**
      * This method is used to get all Events by EventType.
      *
@@ -391,6 +418,36 @@ public class EventService implements IEventService {
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
             eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+//		if(eventList.size() <= 0) {
+//			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+//		}
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+
+    }
+
+
+    public String getAllEventsUpComing(Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+
+        List<Event> eventList = null;
+        try {
+            Optional<EventType> eventTypeEntity = eventTypeRepository.findById(eventTypeId);
+            if (!eventTypeEntity.isPresent())
+                throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+            eventList = (List<Event>) eventRepository.findByEventTypeAndCreatedOnGreaterThanEqual(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -455,6 +512,50 @@ public class EventService implements IEventService {
     }
 
     @Override
+    public String getAllEventsUpcoming(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+
+        List<Event> eventList = null;
+        Optional<Viewer> viewerEntity = null;
+        Optional<EventType> eventTypeEntity = null;
+        try {
+            if (eventTypeId != null) {
+                eventTypeEntity = eventTypeRepository.findById(eventTypeId);
+                if (!eventTypeEntity.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+            if (viewerId != null) {
+                viewerEntity = viewerRepository.findById(viewerId);
+                if (!viewerEntity.isPresent())
+                    throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+            }
+
+
+            if (eventTypeEntity != null)
+                eventList = (List<Event>) eventRepository.findByEventTypeAndCreatedOnGreaterThanEqual(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
+            else
+                eventList = (List<Event>) eventRepository.findAll();
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+//		if(eventList.size() <= 0) {
+//			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+//		}
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, viewerEntity != null ? viewerEntity.get() : null, eventTypeEntity != null ? eventTypeEntity.get() : null));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+
+    }
+
+
+    @Override
     public String getEventStart(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception {
         String result = null;
         Optional<Event> event = null;
@@ -486,7 +587,7 @@ public class EventService implements IEventService {
                         } catch (HttpClientErrorException clientError) {
                             event.get().setLiveStreamState("The requested resource has been deleted or not found");
                         }
-                       // WowzaEventDeleted wowzaEventDeleted = new Gson().fromJson(wowzaResponse, WowzaEventDeleted.class);
+                        // WowzaEventDeleted wowzaEventDeleted = new Gson().fromJson(wowzaResponse, WowzaEventDeleted.class);
                         if (wowzaEventDeleted != null && wowzaEventDeleted.getMeta() != null) {
                             String message = wowzaEventDeleted.getMeta().getMessage();
                             event.get().setLiveStreamState(message);
@@ -1163,6 +1264,48 @@ public class EventService implements IEventService {
         return result;
     }
 
+    @Override
+    public String getEventsByBroadcasterUpcoming(Integer viewerId, Integer broadcasterId) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = null;
+
+        BroadcasterInfo broadcasterInfo = null;
+        Optional<BroadcasterInfo> broadcasterInfoEntity = broadcasterInfoRepository.findById(broadcasterId);
+        if (broadcasterInfoEntity.isPresent())
+            broadcasterInfo = broadcasterInfoEntity.get();
+
+        if (broadcasterInfo == null) {
+            Optional<SpotlightUser> spotlightUser = spotlightUserRepository
+                    .findById(broadcasterId);
+            if (spotlightUser.isPresent()) {
+                broadcasterInfo = broadcasterInfoRepository
+                        .findBySpotlightUser(spotlightUser.get());
+            }
+        }
+        List<Event> eventList = null;
+        Optional<Viewer> viewerEntity = null;
+        try {
+            if (viewerId != null)
+                viewerEntity = viewerRepository.findById(viewerId);
+            eventList = (List<Event>) eventRepository.findByBroadcasterInfoAndCreatedOnGreaterThanEqual(broadcasterInfo, new Timestamp(System.currentTimeMillis()));
+
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+//		if(eventList.size() <= 0) {
+//			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+//		}
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, (viewerEntity != null && viewerEntity.isPresent()) ? viewerEntity.get() : null, null));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
+
+
     /**
      * This method is used to get all Events by broadcaster with paging.
      *
@@ -1653,6 +1796,7 @@ public class EventService implements IEventService {
 
             if (eventReqObj.getStatus() != null && eventReqObj.getStatus().equalsIgnoreCase("InActive")) {
                 /////TODO///////
+
 
             }
 

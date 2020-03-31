@@ -51,6 +51,9 @@ public interface IEventService {
 	 */
 	public String getAllEvents() throws ResourceNotFoundException, BusinessException, Exception;
 
+	public String getOnlyAllUpcomingEvent() throws ResourceNotFoundException, BusinessException, Exception;
+
+
 	/**
 	 * This method is used to get all Events by EventType.
 	 * 
@@ -222,6 +225,8 @@ public interface IEventService {
 	 */
 	public String getEventsByBroadcaster(Integer viewerId, Integer broadcasterId)
 			throws ResourceNotFoundException, BusinessException, Exception;
+
+	String getEventsByBroadcasterUpcoming(Integer viewerId, Integer broadcasterId) throws ResourceNotFoundException, BusinessException, Exception;
 
 	/**
 	 * This method is used to get all Events by broadcaster with paging.
@@ -617,6 +622,8 @@ public interface IEventService {
 
 	public String getAllEvents(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
+
+	String getAllEventsUpcoming(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
 	public String getEventStart(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception;
 	public String getEventStop(Integer eventId, Integer spotlightId) throws ResourceNotFoundException, BusinessException, Exception;;

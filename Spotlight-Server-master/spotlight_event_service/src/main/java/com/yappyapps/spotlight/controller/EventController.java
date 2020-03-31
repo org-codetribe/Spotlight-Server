@@ -1294,4 +1294,85 @@ public class EventController {
     }
 
 
+
+
+
+
+
+
+    @RequestMapping(value = "/up-coming", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String getAllEventsByEventTypeUpdated(@RequestParam(value = "eventTypeId", required = false) String eventTypeId, @RequestParam(value = "viewerId", required = false) String viewerId, @RequestParam(value = "brodcasterId", required = false) String brodcasterId,
+                                   @RequestParam(value = "limit", required = false) String limit,
+                                   @RequestParam(value = "offset", required = false) String offset,
+                                   @RequestParam(value = "direction", required = false) String direction,
+                                   @RequestParam(value = "orderBy", required = false) String orderBy)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "getAllEventsByEventType";
+        LOGGER.info("EventController :: " + operation + " :: eventTypeId :: " + eventTypeId + " :: limit :: " + limit + " :: offset :: " + offset
+                + " :: direction :: " + direction + " :: orderBy :: " + orderBy);
+        long startTime = System.currentTimeMillis();
+        String result = null;
+        try {
+            if (offset != null && limit != null) {
+                utils.isInteger(offset, "offset");
+                utils.isInteger(limit, "limit");
+                utils.isOrderByDirectionValid(direction);
+                utils.isOrderByPropertyValid(orderBy, Event.class);
+                if (eventTypeId != null && viewerId == null) {
+                    result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+                } else if (eventTypeId != null && viewerId != null) {
+                    result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), Integer.valueOf(eventTypeId));
+                } else if (eventTypeId == null && viewerId != null) {
+                    result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), null);
+                } else if (viewerId != null && brodcasterId != null) {
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId),Integer.valueOf(brodcasterId),Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+                } else {
+                    result = eventService.getAllEvents(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+                }
+            } else {
+                if (eventTypeId != null && viewerId == null) {
+                    result = eventService.getAllEvents(Integer.valueOf(eventTypeId));
+                } else if (eventTypeId != null && viewerId != null) {
+                    result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
+                } else if (eventTypeId == null && viewerId != null) {
+                    result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
+                } else if(viewerId !=null && brodcasterId!=null){
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
+                }
+                else {
+                    result = eventService.getOnlyAllUpcomingEvent();
+                }
+            }
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

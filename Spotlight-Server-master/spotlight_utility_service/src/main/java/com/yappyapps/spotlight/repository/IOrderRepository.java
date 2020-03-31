@@ -9,15 +9,17 @@ import java.util.List;
 
 /**
  * The IViewerRepository interface provides the CRUD operations on Viewer domain
- * 
+ *
  * <h1>@Repository</h1> will enable it to include all the CRUD operations.
- * 
+ *
  * @author Naveen Goswami
  * @version 1.0
  * @since 2018-07-14
  */
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, Integer> {
-List<Order> findByViewerId(Integer viewerId);
+    List<Order> findByViewerId(Integer viewerId);
+
+    List<Order> findByEventIdAndViewerId(Integer eventId,Integer viewerId);
 
 }

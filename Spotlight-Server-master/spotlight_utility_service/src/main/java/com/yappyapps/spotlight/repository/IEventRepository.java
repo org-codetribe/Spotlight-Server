@@ -63,6 +63,11 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
 	 */
 	List<Event> findByBroadcasterInfo(BroadcasterInfo broadcasterInfo);
 
+	List<Event> findByBroadcasterInfoAndCreatedOnGreaterThanEqual(BroadcasterInfo broadcasterInfo,Timestamp current);
+
+
+	List<Event> findAllByCreatedOnGreaterThanEqual(Timestamp current);
+
 	/**
 	 * This method is used to find all the Events by BroadcasterInfo with paging.
 	 * 
@@ -82,6 +87,8 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
 	 * @return List&lt;Event&gt;
 	 */
 	List<Event> findByEventType(EventType eventType);
+	List<Event> findByEventTypeAndCreatedOnGreaterThanEqual(EventType eventType,Timestamp current);
+
 
 	/**
 	 * This method is used to find all Events by EventType with paging.

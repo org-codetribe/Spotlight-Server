@@ -1058,6 +1058,11 @@ public class ViewerService implements IViewerService {
             if (!eventEntity.isPresent()) {
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
+
+            List<Order> orderRepositoryByEventId = orderRepository.findByEventIdAndViewerId(eventEntity.get().getId(), viewerEntity.get().getId());
+            if (orderRepositoryByEventId != null && orderRepositoryByEventId.size() > 0) {
+                throw new AlreadyExistException("You have Already purchased this event . now you can not buy again ");
+            }
             walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
             Double minusAmount = null;
             if (walletEntity != null) {
