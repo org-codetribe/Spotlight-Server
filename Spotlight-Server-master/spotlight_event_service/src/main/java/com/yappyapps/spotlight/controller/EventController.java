@@ -1328,7 +1328,7 @@ public class EventController {
                 } else if (eventTypeId != null && viewerId != null) {
                     result = eventService.getAllEventsUpcoming(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
                 } else if (eventTypeId == null && viewerId != null) {
-                    result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
+                    result = eventService.getAllEventsUpcoming(null, Integer.valueOf(viewerId));
                 } else if (viewerId != null && brodcasterId != null) {
                     result = eventService.getEventsByBroadcasterUpcoming(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
                 } else {

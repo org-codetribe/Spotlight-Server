@@ -159,8 +159,7 @@ public class ViewerHelper {
 
         }
         if (order.getEventId() != null) {
-
-            Optional<Event> event = eventRepository.findById(order.getId());
+            Optional<Event> event = eventRepository.findById(order.getEventId());
             viewerObj.put("event", eventHelper.buildResponseObject(event.get(), null, true, new EventType()));
 
         }
