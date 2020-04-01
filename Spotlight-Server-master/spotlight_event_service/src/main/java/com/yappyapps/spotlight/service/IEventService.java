@@ -620,7 +620,9 @@ public interface IEventService {
 
 	public String testDate(Event eventReqObj) throws ResourceNotFoundException, BusinessException, Exception;
 
-	public String getAllEvents(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
+    String getAllEventsUpComing(Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception;
+
+    public String getAllEvents(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;
 
 
 	String getAllEventsUpcoming(Integer eventTypeId, Integer viewerId) throws ResourceNotFoundException, BusinessException, Exception;

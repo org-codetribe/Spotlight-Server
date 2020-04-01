@@ -264,7 +264,7 @@ public class EventController {
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), null);
                 } else if (viewerId != null && brodcasterId != null) {
-                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId),Integer.valueOf(brodcasterId),Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId), Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 } else {
                     result = eventService.getAllEvents(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 }
@@ -275,10 +275,9 @@ public class EventController {
                     result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
-                } else if(viewerId !=null && brodcasterId!=null){
+                } else if (viewerId != null && brodcasterId != null) {
                     result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
-                }
-                else {
+                } else {
                     result = eventService.getAllEvents();
                 }
             }
@@ -619,7 +618,7 @@ public class EventController {
                                   @RequestParam(value = "offset", required = false) String offset,
                                   @RequestParam(value = "direction", required = false) String direction,
                                   @RequestParam(value = "orderBy", required = false) String orderBy,
-                                  @PathVariable(value = "broadcasterId") String broadcasterId,  @PathVariable(value = "viewerId",required = false) String viewerId)
+                                  @PathVariable(value = "broadcasterId") String broadcasterId, @PathVariable(value = "viewerId", required = false) String viewerId)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "getEventsByBroadcaster";
         LOGGER.info("EventController :: " + operation + " :: broadcasterId :: " + broadcasterId + " :: limit :: "
@@ -643,10 +642,9 @@ public class EventController {
                             Integer.valueOf(offset), direction, orderBy);
                 }
             } else {
-                if (broadcasterId != null && viewerId !=null) {
+                if (broadcasterId != null && viewerId != null) {
                     result = eventService.getEventsByBroadcaster(Integer.parseInt(viewerId), Integer.parseInt(broadcasterId));
-                }
-                else if (broadcasterId != null) {
+                } else if (broadcasterId != null) {
                     result = eventService.getEventsByBroadcaster(null, Integer.parseInt(broadcasterId));
                 } else {
                     result = eventService.getAllEvents();
@@ -1294,19 +1292,13 @@ public class EventController {
     }
 
 
-
-
-
-
-
-
     @RequestMapping(value = "/up-coming", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String getAllEventsByEventTypeUpdated(@RequestParam(value = "eventTypeId", required = false) String eventTypeId, @RequestParam(value = "viewerId", required = false) String viewerId, @RequestParam(value = "brodcasterId", required = false) String brodcasterId,
-                                   @RequestParam(value = "limit", required = false) String limit,
-                                   @RequestParam(value = "offset", required = false) String offset,
-                                   @RequestParam(value = "direction", required = false) String direction,
-                                   @RequestParam(value = "orderBy", required = false) String orderBy)
+                                          @RequestParam(value = "limit", required = false) String limit,
+                                          @RequestParam(value = "offset", required = false) String offset,
+                                          @RequestParam(value = "direction", required = false) String direction,
+                                          @RequestParam(value = "orderBy", required = false) String orderBy)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
         String operation = "getAllEventsByEventType";
         LOGGER.info("EventController :: " + operation + " :: eventTypeId :: " + eventTypeId + " :: limit :: " + limit + " :: offset :: " + offset
@@ -1326,21 +1318,20 @@ public class EventController {
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEventsWithViewer(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy, Integer.valueOf(viewerId), null);
                 } else if (viewerId != null && brodcasterId != null) {
-                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId),Integer.valueOf(brodcasterId),Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
+                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId), Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 } else {
                     result = eventService.getAllEvents(Integer.valueOf(limit), Integer.valueOf(offset), direction, orderBy);
                 }
             } else {
                 if (eventTypeId != null && viewerId == null) {
-                    result = eventService.getAllEvents(Integer.valueOf(eventTypeId));
+                    result = eventService.getAllEventsUpComing(Integer.valueOf(eventTypeId));
                 } else if (eventTypeId != null && viewerId != null) {
-                    result = eventService.getAllEvents(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
+                    result = eventService.getAllEventsUpcoming(Integer.valueOf(eventTypeId), Integer.valueOf(viewerId));
                 } else if (eventTypeId == null && viewerId != null) {
                     result = eventService.getAllEvents(null, Integer.valueOf(viewerId));
-                } else if(viewerId !=null && brodcasterId!=null){
-                    result = eventService.getEventsByBroadcaster(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
-                }
-                else {
+                } else if (viewerId != null && brodcasterId != null) {
+                    result = eventService.getEventsByBroadcasterUpcoming(Integer.valueOf(viewerId), Integer.valueOf(brodcasterId));
+                } else {
                     result = eventService.getOnlyAllUpcomingEvent();
                 }
             }
@@ -1361,18 +1352,6 @@ public class EventController {
         }
         return result;
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 }

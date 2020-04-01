@@ -437,7 +437,7 @@ public class EventService implements IEventService {
 
     }
 
-
+    @Override
     public String getAllEventsUpComing(Integer eventTypeId) throws ResourceNotFoundException, BusinessException, Exception {
         String result = null;
 
