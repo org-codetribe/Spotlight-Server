@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.security;
 
+import com.yappyapps.spotlight.filter.RestConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,8 +57,8 @@ public class SpotlightUserWebSecurityConfiguration extends WebSecurityConfigurer
 	 * CORSFilter dependency will be automatically injected.
 	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
 	 */
-	@Autowired
-	private CORSFilter filterBean;
+	//@Autowired
+	//private RestConfig filterBean;
 
 	@Autowired
 	private JwtAuthorizationTokenFilter authenticationTokenFilter;
@@ -119,7 +120,7 @@ public class SpotlightUserWebSecurityConfiguration extends WebSecurityConfigurer
 		httpSecurity.csrf().disable().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
 				.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
 				.addFilterAfter(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
-				.addFilterBefore(filterBean, UsernamePasswordAuthenticationFilter.class)
+				//.addFilterBefore(filterBean, UsernamePasswordAuthenticationFilter.class)
 				.authorizeRequests()
                 .antMatchers(AUTH_WHITELIST).permitAll()
                 .antMatchers(HttpMethod.POST, "/api/1.0/login/viewer", "/api/1.0/login/user").permitAll()

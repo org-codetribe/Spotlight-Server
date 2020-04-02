@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 2018-07-14
  */
-public class CORSFilter implements Filter {
+public class CORSFilter  {
+
+	//implements Filter
 	/**
 	 * Logger for the class.
 	 */
@@ -37,25 +39,25 @@ public class CORSFilter implements Filter {
 	 * This method is called when filter is being destroyed.
 	 * 
 	 */
-	public void destroy() {
+	/*public void destroy() {
 		LOGGER.debug("CORSFilter : destroy");
 	}
 
-	/**
+	*//**
 	 * This method is called every time when a request is made.
-	 * 
+	 *
 	 * @param req:
 	 *            ServletRequest.
 	 * @param resp:
 	 *            ServletResponse
 	 * @param chain:
 	 *            FilterChain
-	 * 
+	 *
 	 * @throws ServletException
 	 *             ServletException
 	 * @throws IOException
 	 *             IOException
-	 */
+	 *//*
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws ServletException, IOException {
 		HttpServletRequest httpReq = (HttpServletRequest) req;
@@ -88,16 +90,16 @@ public class CORSFilter implements Filter {
 		}
 	}
 
-	/**
+	*//**
 	 * This method is called at the time of initialization.
-	 * 
+	 *
 	 * @param config:
 	 *            FilterConfig
-	 * 
+	 *
 	 * @throws ServletException
 	 *             ServletException
-	 */
+	 *//*
 	public void init(FilterConfig config) throws ServletException {
 		LOGGER.debug("CORSFilter : init");
-	}
+	}*/
 }
