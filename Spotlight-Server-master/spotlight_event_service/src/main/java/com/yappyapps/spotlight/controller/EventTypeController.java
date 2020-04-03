@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
  */
 
 @RestController
+@CrossOrigin(value = "*")
 @RequestMapping(value = "1.0/eventtype")
 public class EventTypeController {
 	/**

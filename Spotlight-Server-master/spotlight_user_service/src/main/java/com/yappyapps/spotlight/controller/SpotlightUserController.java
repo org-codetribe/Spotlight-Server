@@ -44,6 +44,7 @@ import com.google.gson.annotations.SerializedName;
 
 @RestController
 @RequestMapping(value = "1.0/user/spotlight")
+@CrossOrigin(value = "*")
 public class SpotlightUserController {
     /**
      * Logger for the class.

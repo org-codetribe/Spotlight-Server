@@ -43,6 +43,7 @@ import java.util.Collections;
 import java.util.Date;
 
 @RestController
+@CrossOrigin(value = "*")
 public class ViewerRestController {
     /**
      * Logger for the class.
