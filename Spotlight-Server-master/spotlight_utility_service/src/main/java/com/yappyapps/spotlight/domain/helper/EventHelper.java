@@ -331,6 +331,10 @@ public class EventHelper {
                         eventObj.put("isFavorite", false);
                     }
                 }
+                List<Order> orders = orderRepository.findByEventIdAndViewerId(event.getId(), viewer.getId());
+                if (orders != null && orders.size() > 0) {
+                    eventObj.put("isEventPurchased", true);
+                }
             }
         }
 
@@ -441,6 +445,11 @@ public class EventHelper {
                     } else {
                         eventObj.put("isFavorite", false);
                     }
+                }
+
+                List<Order> orders = orderRepository.findByEventIdAndViewerId(event.getId(), viewer.getId());
+                if (orders != null && orders.size() > 0) {
+                    eventObj.put("isEventPurchased", true);
                 }
             }
         }
@@ -565,6 +574,10 @@ public class EventHelper {
                         eventObj.put("isFavorite", false);
                     }
                 }
+                List<Order> orders = orderRepository.findByEventIdAndViewerId(event.getId(), viewer.getId());
+                if (orders != null && orders.size() > 0) {
+                    eventObj.put("isEventPurchased", true);
+                }
             }
         }
 
@@ -688,6 +701,11 @@ public class EventHelper {
                         eventObj.put("isFavorite", false);
                     }
                 }
+                List<Order> orders = orderRepository.findByEventIdAndViewerId(event.getId(), viewer.getId());
+                if (orders != null && orders.size() > 0) {
+                    eventObj.put("isEventPurchased", true);
+                }
+
             }
         }
 
