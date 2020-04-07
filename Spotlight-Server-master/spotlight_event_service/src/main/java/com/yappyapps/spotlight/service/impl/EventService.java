@@ -447,7 +447,7 @@ public class EventService implements IEventService {
             if (!eventTypeEntity.isPresent())
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
-            eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeGreaterThanEqual(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
+            eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeAsc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -532,7 +532,7 @@ public class EventService implements IEventService {
 
 
             if (eventTypeEntity != null)
-                eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeGreaterThanEqual(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
+                eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeAsc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
             else
                 eventList = (List<Event>) eventRepository.findAllByEventUtcDatetimeGreaterThanEqual(new Timestamp(System.currentTimeMillis()));
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {

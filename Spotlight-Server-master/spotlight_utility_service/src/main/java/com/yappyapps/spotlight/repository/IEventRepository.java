@@ -80,7 +80,7 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
      */
     List<Event> findByEventType(EventType eventType);
 
-    List<Event> findByEventTypeAndEventUtcDatetimeGreaterThanEqual(EventType eventType, Timestamp current);
+    List<Event> findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeAsc(EventType eventType, Timestamp current);
 
 
     /**
