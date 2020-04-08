@@ -1781,9 +1781,9 @@ public class EventService implements IEventService {
                             + eventReqObj.getEventImageUrl());
                 }
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
-            } else if (eventReqObj.getEventImageUrl() != null) {
+            } /*else if (eventReqObj.getEventImageUrl() != null) {
                 previousUrl = eventEntity.get().getEventImageUrl();
-            }
+            }*/
 
             if (eventReqObj.getStatus() != null && eventReqObj.getStatus().equalsIgnoreCase("Active")) {
                 Optional<BroadcasterInfo> broadcasterInfoEntity = broadcasterInfoRepository.findById(eventEntity.get().getBroadcasterInfo().getId());
@@ -1828,10 +1828,10 @@ public class EventService implements IEventService {
                             .populateSpotlightCommission(spotlightCommissionReqObj);
                 spotlightCommissionRepository.save(spotlightCommission);
             }
-            if (!previousUrl.equals("")) {
+           /* if (!previousUrl.equals("")) {
                 this.amazonClient.deleteFileFromS3Bucket(previousUrl);
                 LOGGER.info("Finally. deleting previous Event Image file ::::::::: " + previousUrl);
-            }
+            }*/
 
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             if (eventEntity.get().getEventImageUrl() != null) {

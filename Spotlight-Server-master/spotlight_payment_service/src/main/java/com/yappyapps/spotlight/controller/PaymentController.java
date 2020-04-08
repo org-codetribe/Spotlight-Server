@@ -289,4 +289,49 @@ public class PaymentController {
 
     }
 
+	@RequestMapping(value = "/add-money-wallet", method = RequestMethod.POST, consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
+			MediaType.APPLICATION_JSON_VALUE })
+	public Result<Transaction> addWalletBucksThroughPaymentGateway(@RequestBody String requestBody,
+												  @RequestHeader("Content-Type") String contentType) throws InvalidParameterException, ResourceNotFoundException, BusinessException, Exception {
+
+		String operation = "addWalletBucksThroughPaymentGateway";
+		LOGGER.info("PaymentController :: " + operation + " :: requestBody :: " + requestBody + " :: contentType :: " + contentType );
+		long startTime = System.currentTimeMillis();
+		Result<Transaction> result = null;
+		utils.isBodyJSONObject(requestBody);
+		Payment payment = gson.fromJson(requestBody, Payment.class);
+		utils.isEmptyOrNull(payment.getChargeAmount(), "Charge Amount");
+		utils.isBigDecimalGreaterThanZero(payment.getChargeAmount(), "Charge Amount");
+		utils.isEmptyOrNull(payment.getViewer(), "Viewer");
+		utils.isEmptyOrNull(payment.getNonce(), "Nonce");
+		utils.isEmptyOrNull(payment.getViewer().getId(), "Viewer Id");
+		utils.isIntegerGreaterThanZero(payment.getViewer().getId(), "Viewer Id");
+		try {
+			result = paymentService.addWalletPaymentTransaction(payment);
+		} catch (InvalidParameterException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (ResourceNotFoundException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (BusinessException e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage());
+			throw e;
+		} finally {
+			meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+		}
+		return result;
+
+	}
+
+
+
+
+
+
+
+
 }

@@ -3,6 +3,7 @@ package com.yappyapps.spotlight.domain;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Entity
@@ -16,6 +17,8 @@ public class Wallet implements Serializable {
     private Double amount;
     @Column(name = "VIEWER_ID")
     private Integer viewerId;
+    @Column(name = "PAYMENT_METHOD_TYPE")
+    private String paymentMethodType;
 
 
     private Date createdOn;
@@ -60,5 +63,13 @@ public class Wallet implements Serializable {
 
     public void setUpdatedOn(Date updatedOn) {
         this.updatedOn = updatedOn;
+    }
+
+    public String getPaymentMethodType() {
+        return paymentMethodType;
+    }
+
+    public void setPaymentMethodType(String paymentMethodType) {
+        this.paymentMethodType = paymentMethodType;
     }
 }

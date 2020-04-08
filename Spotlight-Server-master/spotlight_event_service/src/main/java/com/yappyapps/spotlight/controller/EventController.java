@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.controller;
 
+import java.sql.Date;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ import com.yappyapps.spotlight.util.Utils;
  *
  * <h1>@RestController</h1> will enable it to expose the REST APIs.
  *
- * @author Naveen Goswami
+ * @author Naveen Goswfami
  * @version 1.0
  * @since 2018-07-14
  */
@@ -879,7 +880,8 @@ public class EventController {
             MediaType.APPLICATION_JSON_VALUE})
     public @ResponseBody
     String updateEvent(@RequestPart(value = "request") String requestBody,
-                       @RequestPart("eventImage") MultipartFile[] eventImage,
+                       @RequestPart(value = "eventImage", required = false) MultipartFile[] eventImage,
+                       @RequestPart(value = "eventVideo", required = false) MultipartFile[] eventVideo,
                        @RequestHeader("Content-Type") String contentType, @RequestHeader(value = "Authorization", required = false) String token, RedirectAttributes redirectAttributes)
             throws InvalidParameterException, AlreadyExistException, BusinessException {
         String operation = "updateEvent";
@@ -912,8 +914,18 @@ public class EventController {
         if (event.getTotalSeats() != null)
             utils.isInteger(event.getTotalSeats(), "Total Seats");
 
+        if (event.getTimezone() != null)
+            utils.isEmptyOrNull(event.getTimezone(), "Time zone");
+
         if (event.getEventDuration() != null)
             utils.isInteger(event.getEventDuration(), "Event Duration");
+
+        if (event.getActualPrice() != null)
+            utils.isEmptyOrNull(event.getActualPrice(), "Actual Price");
+
+        if (event.getEventUtcDatetime() != null) {
+            utils.isEmptyOrNull(event.getEventUtcDatetime(), "Event Date UTC Time");
+        }
 
         if (null != eventImage && Arrays.asList(eventImage).size() > 0) {
             Arrays.asList(eventImage).stream().map(file -> {
@@ -928,6 +940,21 @@ public class EventController {
                 return null;
             }).collect(Collectors.toList());
         }
+
+        if (null != eventVideo && Arrays.asList(eventVideo).size() > 0) {
+            Arrays.asList(eventVideo).stream().map(file -> {
+                try {
+                    LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
+                    String url = this.amazonClient.uploadFile(file);
+                    event.setEventVideoUrl(url);
+                    LOGGER.info("file URL :::: " + event.getEventVideoUrl());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }).collect(Collectors.toList());
+        }
+
 
         try {
             result = eventService.updateEvent(event);

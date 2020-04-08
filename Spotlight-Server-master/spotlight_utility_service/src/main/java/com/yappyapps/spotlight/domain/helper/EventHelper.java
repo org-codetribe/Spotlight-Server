@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.domain.helper;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,8 @@ public class EventHelper {
      */
     @Autowired
     private ILiveStreamConfigRepository liveStreamConfigRepository;
+
+
 
     /*
      * IPricingRuleRepository Bean
@@ -222,8 +225,10 @@ public class EventHelper {
                 : eventEntity.getLiveStreamUrl());
         eventEntity.setDescription(
                 eventReqObj.getDescription() != null ? eventReqObj.getDescription() : eventEntity.getDescription());
-        eventEntity.setEventImageUrl(eventReqObj.getEventImageUrl() != null ? eventReqObj.getEventImageUrl()
+        eventEntity.setEventImageUrl(eventReqObj.getEventImageUrl() != null && eventReqObj.getEventImageUrl().trim().length() > 0 ? eventReqObj.getEventImageUrl()
                 : eventEntity.getEventImageUrl());
+        eventEntity.setEventVideoUrl(eventReqObj.getEventVideoUrl() != null && eventReqObj.getEventVideoUrl().trim().length() > 0 ? eventReqObj.getEventVideoUrl()
+                : eventEntity.getEventVideoUrl());
         eventEntity.setIsTrending(
                 eventReqObj.getIsTrending() != null ? eventReqObj.getIsTrending() : eventEntity.getIsTrending());
         eventEntity.setChatEnabled(
@@ -239,6 +244,8 @@ public class EventHelper {
         eventEntity.setState(eventReqObj.getState() != null ? eventReqObj.getState() : eventEntity.getState());
         eventEntity.setZip(eventReqObj.getZip() != null ? eventReqObj.getZip() : eventEntity.getZip());
         eventEntity.setLiveStreamData(eventReqObj.getLiveStreamData() != null ? eventReqObj.getLiveStreamData() : eventEntity.getLiveStreamData());
+
+
 
         if (eventReqObj.getBroadcasterInfo() != null) {
             Optional<BroadcasterInfo> broadcasterInfo = broadcasterInfoRepository
