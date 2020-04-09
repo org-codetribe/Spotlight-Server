@@ -40,9 +40,9 @@ public class PaymentTransaction {
 	@NotNull
 	private Float amount;
 
-	@ManyToOne
+	/*@ManyToOne
 	@JoinColumn(name = "event_id", nullable = false)
-	private Event event = null;
+	private Event event = null;*/
 
 	@ManyToOne
 	@JoinColumn(name = "viewer_id", nullable = false)
@@ -112,17 +112,17 @@ public class PaymentTransaction {
 	/**
 	 * @return the event
 	 */
-	public Event getEvent() {
+/*	public Event getEvent() {
 		return event;
 	}
 
-	/**
+	*//**
 	 * @param event
 	 *            the event to set
-	 */
+	 *//*
 	public void setEvent(Event event) {
 		this.event = event;
-	}
+	}*/
 
 	/**
 	 * @return the viewer

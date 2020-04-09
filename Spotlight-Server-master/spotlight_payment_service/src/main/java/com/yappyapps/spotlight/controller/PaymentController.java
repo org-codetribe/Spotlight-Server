@@ -292,7 +292,7 @@ public class PaymentController {
 	@RequestMapping(value = "/add-money-wallet", method = RequestMethod.POST, consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
 			MediaType.APPLICATION_JSON_VALUE })
 	public Result<Transaction> addWalletBucksThroughPaymentGateway(@RequestBody String requestBody,
-												  @RequestHeader("Content-Type") String contentType) throws InvalidParameterException, ResourceNotFoundException, BusinessException, Exception {
+												  @RequestHeader("Content-Type") String contentType,@RequestParam("viewerId") Integer viewerId) throws InvalidParameterException, ResourceNotFoundException, BusinessException, Exception {
 
 		String operation = "addWalletBucksThroughPaymentGateway";
 		LOGGER.info("PaymentController :: " + operation + " :: requestBody :: " + requestBody + " :: contentType :: " + contentType );
@@ -302,10 +302,9 @@ public class PaymentController {
 		Payment payment = gson.fromJson(requestBody, Payment.class);
 		utils.isEmptyOrNull(payment.getChargeAmount(), "Charge Amount");
 		utils.isBigDecimalGreaterThanZero(payment.getChargeAmount(), "Charge Amount");
-		utils.isEmptyOrNull(payment.getViewer(), "Viewer");
 		utils.isEmptyOrNull(payment.getNonce(), "Nonce");
-		utils.isEmptyOrNull(payment.getViewer().getId(), "Viewer Id");
-		utils.isIntegerGreaterThanZero(payment.getViewer().getId(), "Viewer Id");
+		utils.isEmptyOrNull(viewerId, "Viewer Id");
+		utils.isIntegerGreaterThanZero(viewerId, "Viewer Id");
 		try {
 			result = paymentService.addWalletPaymentTransaction(payment);
 		} catch (InvalidParameterException e) {

@@ -292,7 +292,7 @@ public class PaymentService implements IPaymentService {
 
         PaymentTransaction paymentTransaction = new PaymentTransaction();
         paymentTransaction.setAmount(eventEntity.get().getActualPrice());
-        paymentTransaction.setEvent(eventEntity.get());
+       // paymentTransaction.setEvent(eventEntity.get());
         paymentTransaction.setPaymentDatetime(currentTime);
         paymentTransaction.setPaymentMethod("BRAINTREE");
         paymentTransaction.setPaymentType("Credit");
@@ -403,7 +403,7 @@ public class PaymentService implements IPaymentService {
 
         PaymentTransaction paymentTransaction = new PaymentTransaction();
         paymentTransaction.setAmount(eventEntity.get().getActualPrice());
-        paymentTransaction.setEvent(eventEntity.get());
+        //paymentTransaction.setEvent(eventEntity.get());
         paymentTransaction.setPaymentDatetime(currentTime);
         paymentTransaction.setPaymentMethod("COUPON");
         paymentTransaction.setPaymentType("Credit");
