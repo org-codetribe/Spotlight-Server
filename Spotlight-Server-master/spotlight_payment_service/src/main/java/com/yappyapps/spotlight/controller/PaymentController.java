@@ -304,6 +304,7 @@ public class PaymentController {
         try {
             Viewer viewer = new Viewer();
             viewer.setId(viewerId);
+            payment.setViewer(viewer);
             result = paymentService.addWalletPaymentTransaction(payment);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
