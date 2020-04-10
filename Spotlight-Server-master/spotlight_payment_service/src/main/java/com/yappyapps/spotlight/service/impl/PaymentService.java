@@ -573,6 +573,7 @@ public class PaymentService implements IPaymentService {
 				if (walletEntity.getAmount() != null) {
 					totalAmount = (walletEntity.getAmount() + transaction.getAmount().doubleValue());
 					walletEntity.setAmount(totalAmount);
+					walletEntity.setPaymentMethodType("BRAINTREE");
 					walletRepository.save(walletEntity);
 
 				} else {
