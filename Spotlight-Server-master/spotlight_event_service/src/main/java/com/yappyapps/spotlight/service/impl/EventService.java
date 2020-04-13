@@ -228,7 +228,7 @@ public class EventService implements IEventService {
 
                 try {
                     JSONObject transcoderObj = new JSONObject();
-                    transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300));
+                    transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300).put("low_latency",true));
                     wowzaClient.executePatch("transcoders/" + wowzaJSONObject.getJSONObject("live_stream").get("id").toString(), transcoderObj);
                 } catch (Exception e) {
                     LOGGER.error("Error in updating transcoder idle_timeout");
@@ -261,7 +261,7 @@ public class EventService implements IEventService {
 
                 try {
                     JSONObject transcoderObj = new JSONObject();
-                    transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300));
+                    transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300).put("low_latency",true));
                     wowzaClient.executePatch("transcoders/" + wowzaJSONObject.getJSONObject("live_stream").get("id").toString(), transcoderObj);
                 } catch (Exception e) {
                     LOGGER.error("Error in updating transcoder idle_timeout");
