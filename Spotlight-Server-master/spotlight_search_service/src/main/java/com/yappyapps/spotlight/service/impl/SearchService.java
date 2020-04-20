@@ -1,11 +1,19 @@
 package com.yappyapps.spotlight.service.impl;
 
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
+import com.yappyapps.spotlight.domain.Event;
+import com.yappyapps.spotlight.domain.EventType;
 import com.yappyapps.spotlight.domain.Viewer;
+import com.yappyapps.spotlight.domain.helper.BroadcasterInfoHelper;
+import com.yappyapps.spotlight.domain.helper.EventHelper;
+import com.yappyapps.spotlight.domain.helper.EventTypeHelper;
+import com.yappyapps.spotlight.exception.BusinessException;
+import com.yappyapps.spotlight.exception.ResourceNotFoundException;
+import com.yappyapps.spotlight.repository.IEventRepository;
+import com.yappyapps.spotlight.repository.IEventTypeRepository;
+import com.yappyapps.spotlight.service.ISearchService;
+import com.yappyapps.spotlight.util.IConstants;
+import com.yappyapps.spotlight.util.Utils;
 import org.apache.lucene.search.Query;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
@@ -19,31 +27,32 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.domain.Event;
-import com.yappyapps.spotlight.domain.helper.BroadcasterInfoHelper;
-import com.yappyapps.spotlight.domain.helper.EventHelper;
-import com.yappyapps.spotlight.exception.BusinessException;
-import com.yappyapps.spotlight.exception.ResourceNotFoundException;
-import com.yappyapps.spotlight.service.ISearchService;
-import com.yappyapps.spotlight.util.IConstants;
-import com.yappyapps.spotlight.util.Utils;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * The SearchService class is the implementation of ISearchService
- * 
+ *
  * <h1>@Service</h1> denotes that it is a service class
- * 
+ *
  * @author Naveen Goswami
  * @version 1.0
  * @since 2018-07-14
  */
 @Service
 public class SearchService implements ISearchService {
-	/**
-	 * Logger for the class.
-	 */
-	private static final Logger LOGGER = LoggerFactory.getLogger(SearchService.class);
+    /**
+     * Logger for the class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchService.class);
+
+    @Autowired
+    private IEventTypeRepository eventTypeRepository;
+
+    @Autowired
+    private IEventRepository eventRepository;
 
 //	/**
 //	 * IGenreRepository dependency will be automatically injected.
@@ -72,24 +81,25 @@ public class SearchService implements ISearchService {
 //	 */
 //	@Autowired
 //	private PasswordEncoder passwordEncoder;
-	
-	@Autowired
-	private BroadcasterInfoHelper broadcasterInfoHelper;
 
-	@Autowired
-	private EventHelper eventHelper;
+    @Autowired
+    private BroadcasterInfoHelper broadcasterInfoHelper;
 
+    @Autowired
+    private EventHelper eventHelper;
+    @Autowired
+    private EventTypeHelper eventTypeHelper;
 //	@Autowired
 //	private GenreHelper genreHelper;
 
 //	@Autowired
 //	private SpotlightUserHelper spotlightUserHelper;
-	/**
-	 * Utils dependency will be automatically injected.
-	 * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
-	 */
-	@Autowired
-	private Utils utils;
+    /**
+     * Utils dependency will be automatically injected.
+     * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
+     */
+    @Autowired
+    private Utils utils;
 
     @Autowired
     private final EntityManager centityManager;
@@ -98,7 +108,8 @@ public class SearchService implements ISearchService {
     @Autowired
     public SearchService(EntityManager entityManager) {
         super();
-        this.centityManager = entityManager.getEntityManagerFactory().createEntityManager();;
+        this.centityManager = entityManager.getEntityManagerFactory().createEntityManager();
+        ;
     }
 
 
@@ -113,29 +124,25 @@ public class SearchService implements ISearchService {
     }
 
     /**
-	 * This method is used to search based on searchTerm.
-	 * 
-	 * @param searchTerm: String
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
+     * This method is used to search based on searchTerm.
+     *
+     * @param searchTerm: String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
     @Transactional
-    public String fuzzySearch(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception{
-		String result = "";
+    public String fuzzySearch(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
 
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
-        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc", "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
-        
+
         javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
 
         // execute search
@@ -144,13 +151,13 @@ public class SearchService implements ISearchService {
             broadcasterInfoList = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
         FullTextEntityManager fullTextEventEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder eventqb = fullTextEventEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Event.class).get();
-        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description",  "eventType.name", "address1", "address2", "city", "country", "state", "zip")
+        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description", "eventType.name", "address1", "address2", "city", "country", "state", "zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         javax.persistence.Query jpaEventQuery = fullTextEventEntityManager.createFullTextQuery(eventLuceneQuery, Event.class);
@@ -159,51 +166,42 @@ public class SearchService implements ISearchService {
 
         List<Event> eventList = null;
         try {
-        	eventList = jpaEventQuery.getResultList();
+            eventList = jpaEventQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
-        
-        if((broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) && (eventList == null || eventList.size() <= 0)) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+        if ((broadcasterInfoList == null || broadcasterInfoList.size() <= 0) && (eventList == null || eventList.size() <= 0)) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
-        
+
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
-		
-		result = utils.constructSucessJSON(jObj);
+        jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
 
-		return result;
-	}
+        result = utils.constructSucessJSON(jObj);
 
-	/**
-	 * This method is used to search by searchTerm with paging.
-	 * 
-	 * @param searchTerm: String
-	 * @param limit:
-	 *            Integer
-	 * @param offset:
-	 *            Integer
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * 
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
-	public String fuzzySearch(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
-			throws ResourceNotFoundException, BusinessException, Exception {
+        return result;
+    }
+
+    /**
+     * This method is used to search by searchTerm with paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      Integer
+     * @param offset:     Integer
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
+    public String fuzzySearch(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
+            throws ResourceNotFoundException, BusinessException, Exception {
 //		String result = null;
 //		long totalCount = 0;
 //		GenreHelper genreHelper = new GenreHelper(genreRepository);
@@ -241,50 +239,50 @@ public class SearchService implements ISearchService {
 //		result = utils.constructSucessJSON(jObj);
 //
 //		return result;
-		String result = "";
-		long totalCount = 0;
+        String result = "";
+        long totalCount = 0;
 //		int pageNum = offset / limit;
 //		Sort sort = new Sort(new SortField("displayName", Type.valueOf("ASC")));
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
-        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc", "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
-        
+
         FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
         List<BroadcasterInfo> broadcasterInfoListWithoutPaging = null;
         try {
-        	broadcasterInfoListWithoutPaging = jpaQuery.getResultList();
+            broadcasterInfoListWithoutPaging = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
         // execute search
         jpaQuery.setFirstResult(offset);
         jpaQuery.setMaxResults(limit);
 //        jpaQuery.setSort(sort);
-        
+
 //        Sort sort = SortUtils.getLuceneSortWithDefaults(searchParameters.getSort(), QueuedTaskHolderSort.ID);
         List<BroadcasterInfo> broadcasterInfoList = null;
         try {
             broadcasterInfoList = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-		Direction directionObj = (direction != null ? Direction.valueOf(direction) : Direction.valueOf("ASC"));
-		orderBy = (orderBy != null ? orderBy : "id");
-		int pageNum = offset / limit;
+        Direction directionObj = (direction != null ? Direction.valueOf(direction) : Direction.valueOf("ASC"));
+        orderBy = (orderBy != null ? orderBy : "id");
+        int pageNum = offset / limit;
 //        Pageable page = PageRequest.of(pageNum, limit, directionObj, orderBy);
 //        Page<BroadcasterInfo> broadcasterInfoPageList= new PageImpl<BroadcasterInfo>(broadcasterInfoList ,page,broadcasterInfoList.size());
         totalCount = broadcasterInfoListWithoutPaging.size();
-        
+
         FullTextEntityManager fullTextEventEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder eventqb = fullTextEventEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Event.class).get();
-        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description",  "eventType.name", "address1", "address2", "city", "country", "state", "zip")
+        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description", "eventType.name", "address1", "address2", "city", "country", "state", "zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         FullTextQuery jpaEventQuery = fullTextEventEntityManager.createFullTextQuery(eventLuceneQuery, Event.class);
@@ -295,53 +293,49 @@ public class SearchService implements ISearchService {
 //        jpaQuery.setSort(sort);
         List<Event> eventList = null;
         try {
-        	eventList = jpaEventQuery.getResultList();
+            eventList = jpaEventQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-        if((broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) && (eventList == null || eventList.size() <= 0)) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        if ((broadcasterInfoList == null || broadcasterInfoList.size() <= 0) && (eventList == null || eventList.size() <= 0)) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
 
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
-		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
-		jObj.put(IConstants.CURRENT_PAGE, pageNum);
-		jObj.put(IConstants.CURRENT_PAGE_RECORDS, broadcasterInfoList.size());
+        jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
+        jObj.put(IConstants.TOTAL_RECORDS, totalCount);
+        jObj.put(IConstants.CURRENT_PAGE, pageNum);
+        jObj.put(IConstants.CURRENT_PAGE_RECORDS, broadcasterInfoList.size());
 
-		result = utils.constructSucessJSON(jObj);
+        result = utils.constructSucessJSON(jObj);
 
-		return result;
-	}
+        return result;
+    }
 
     /**
-	 * This method is used to search based on searchTerm.
-	 * 
-	 * @param searchTerm: String
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
+     * This method is used to search based on searchTerm.
+     *
+     * @param searchTerm: String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
     @Transactional
-    public String fuzzySearchBroadcasters(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception{
-		String result = "";
+    public String fuzzySearchBroadcasters(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
 
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
-        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc", "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
-        
+
         javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
 
         // execute search
@@ -350,104 +344,94 @@ public class SearchService implements ISearchService {
             broadcasterInfoList = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-        if(broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        if (broadcasterInfoList == null || broadcasterInfoList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
-        
+
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		
-		result = utils.constructSucessJSON(jObj);
+        jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
 
-		return result;
-	}
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
 
 
+    @Override
+    @Transactional
+    public String fuzzySearchBroadcasters(String searchTerm, Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
 
-	@Override
-	@Transactional
-	public String fuzzySearchBroadcasters(String searchTerm, Viewer viewer) throws ResourceNotFoundException, BusinessException, Exception{
-		String result = "";
+        FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
+        QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
+        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc", "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+                .matching(searchTerm).createQuery();
+        LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
 
-		FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
-		QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
-		Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
-				.matching(searchTerm).createQuery();
-		LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+        javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
 
-		javax.persistence.Query jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
+        // execute search
+        List<BroadcasterInfo> broadcasterInfoList = null;
+        try {
+            broadcasterInfoList = jpaQuery.getResultList();
+            LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+        } catch (NoResultException nre) {
+            LOGGER.error("error");
+            nre.printStackTrace();
+        }
 
-		// execute search
-		List<BroadcasterInfo> broadcasterInfoList = null;
-		try {
-			broadcasterInfoList = jpaQuery.getResultList();
-			LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
-		} catch (NoResultException nre) {
-			LOGGER.error("error");
-			nre.printStackTrace();
-		}
+        if (broadcasterInfoList == null || broadcasterInfoList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        }
 
-		if(broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) {
-			throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
-		}
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
 
-		JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
+        result = utils.constructSucessJSON(jObj);
 
-		result = utils.constructSucessJSON(jObj);
+        return result;
+    }
 
-		return result;
-	}
-
-	/**
-	 * This method is used to search by searchTerm with paging.
-	 * 
-	 * @param searchTerm: String
-	 * @param limit:
-	 *            Integer
-	 * @param offset:
-	 *            Integer
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * 
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
-	public String fuzzySearchBroadcasters(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
-			throws ResourceNotFoundException, BusinessException, Exception {
-		String result = "";
-		int pageNum = offset / limit;
-		long totalCount = 0;
+    /**
+     * This method is used to search by searchTerm with paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      Integer
+     * @param offset:     Integer
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
+    public String fuzzySearchBroadcasters(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
+            throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        int pageNum = offset / limit;
+        long totalCount = 0;
 //		int pageNum = offset / limit;
 //		Sort sort = new Sort(new SortField("displayName", Type.valueOf("ASC")));
         FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder qb = fullTextEntityManager.getSearchFactory().buildQueryBuilder().forEntity(BroadcasterInfo.class).get();
-        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc",  "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
+        Query luceneQuery = qb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "biography", "shortDesc", "genre.name", "spotlightUser.address1", "spotlightUser.address2", "spotlightUser.name", "spotlightUser.phone", "spotlightUser.city", "spotlightUser.country", "spotlightUser.state", "spotlightUser.zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
-        
+
         FullTextQuery jpaQuery = fullTextEntityManager.createFullTextQuery(luceneQuery, BroadcasterInfo.class);
 
         List<BroadcasterInfo> broadcasterInfoListWithoutPaging = null;
         try {
-        	broadcasterInfoListWithoutPaging = jpaQuery.getResultList();
+            broadcasterInfoListWithoutPaging = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
         totalCount = broadcasterInfoListWithoutPaging.size();
         // execute search
@@ -459,46 +443,42 @@ public class SearchService implements ISearchService {
             broadcasterInfoList = jpaQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-        if(broadcasterInfoList == null || broadcasterInfoList.size() <= 0 ) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        if (broadcasterInfoList == null || broadcasterInfoList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
-        
+
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
-		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
-		jObj.put(IConstants.CURRENT_PAGE, pageNum);
-		jObj.put(IConstants.CURRENT_PAGE_RECORDS, broadcasterInfoList.size());
-		
-		result = utils.constructSucessJSON(jObj);
+        jObj.put(IConstants.BROADCASTERS, broadcasterInfoHelper.buildResponseObject(broadcasterInfoList, null));
+        jObj.put(IConstants.TOTAL_RECORDS, totalCount);
+        jObj.put(IConstants.CURRENT_PAGE, pageNum);
+        jObj.put(IConstants.CURRENT_PAGE_RECORDS, broadcasterInfoList.size());
 
-		return result;
-	}
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
 
     /**
-	 * This method is used to search based on searchTerm.
-	 * 
-	 * @param searchTerm: String
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
+     * This method is used to search based on searchTerm.
+     *
+     * @param searchTerm: String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
     @Transactional
-    public String fuzzySearchEvents(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception{
-		String result = "";
+    public String fuzzySearchEvents(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
 
         FullTextEntityManager fullTextEventEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder eventqb = fullTextEventEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Event.class).get();
-        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description",  "eventType.name", "address1", "address2", "city", "country", "state", "zip")
+        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description", "eventType.name", "address1", "address2", "city", "country", "state", "zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         javax.persistence.Query jpaEventQuery = fullTextEventEntityManager.createFullTextQuery(eventLuceneQuery, Event.class);
@@ -507,68 +487,120 @@ public class SearchService implements ISearchService {
 
         List<Event> eventList = null;
         try {
-        	eventList = jpaEventQuery.getResultList();
+            eventList = jpaEventQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-        if(eventList == null || eventList.size() <= 0 ) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        if (eventList == null || eventList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
-        
+
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
-		
-		result = utils.constructSucessJSON(jObj);
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
 
-		return result;
-	}
+        result = utils.constructSucessJSON(jObj);
 
-	/**
-	 * This method is used to search by searchTerm with paging.
-	 * 
-	 * @param searchTerm: String
-	 * @param limit:
-	 *            Integer
-	 * @param offset:
-	 *            Integer
-	 * @param direction:
-	 *            String
-	 * @param orderBy:
-	 *            String
-	 * 
-	 * @return String: Response
-	 * 
-	 * @throws ResourceNotFoundException
-	 *             ResourceNotFoundException
-	 * @throws BusinessException
-	 *             BusinessException
-	 * @throws Exception
-	 *             Exception
-	 */
-	@Override
-	public String fuzzySearchEvents(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
-			throws ResourceNotFoundException, BusinessException, Exception {
-		String result = "";
-		int pageNum = offset / limit;
-		long totalCount = 0;
+        return result;
+    }
+
+
+    @Override
+    @Transactional
+    public String fuzzySearchEventType(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        // execute search
+
+        List<EventType> eventList = null;
+        try {
+            eventList = eventTypeRepository.findByEventTypeSearch(searchTerm);
+
+
+            LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+        } catch (NoResultException nre) {
+            LOGGER.error("error");
+            nre.printStackTrace();
+        }
+
+        if (eventList == null || eventList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        }
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTTYPE, eventTypeHelper.buildResponseObject(eventList));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
+
+
+    @Override
+    @Transactional
+    public String fuzzySearchUpcomingEvent(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        // execute search
+
+        List<Event> eventList = null;
+        try {
+            eventList = eventRepository.findAllByEventUtcDatetimeGreaterThanEqual(searchTerm, new Timestamp(System.currentTimeMillis()));
+
+
+            LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
+        } catch (NoResultException nre) {
+            LOGGER.error("error");
+            nre.printStackTrace();
+        }
+
+        if (eventList == null || eventList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        }
+
+        JSONObject jObj = new JSONObject();
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
+
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
+
+
+    /**
+     * This method is used to search by searchTerm with paging.
+     *
+     * @param searchTerm: String
+     * @param limit:      Integer
+     * @param offset:     Integer
+     * @param direction:  String
+     * @param orderBy:    String
+     * @return String: Response
+     * @throws ResourceNotFoundException ResourceNotFoundException
+     * @throws BusinessException         BusinessException
+     * @throws Exception                 Exception
+     */
+    @Override
+    public String fuzzySearchEvents(String searchTerm, Integer limit, Integer offset, String direction, String orderBy)
+            throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        int pageNum = offset / limit;
+        long totalCount = 0;
 //		Sort sort = new Sort(new SortField("displayName", Type.valueOf("ASC")));
         FullTextEntityManager fullTextEventEntityManager = Search.getFullTextEntityManager(centityManager);
         QueryBuilder eventqb = fullTextEventEntityManager.getSearchFactory().buildQueryBuilder().forEntity(Event.class).get();
-        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description",  "eventType.name", "address1", "address2", "city", "country", "state", "zip")
+        Query eventLuceneQuery = eventqb.keyword().fuzzy().withEditDistanceUpTo(1).withPrefixLength(1).onFields("displayName", "description", "eventType.name", "address1", "address2", "city", "country", "state", "zip")
                 .matching(searchTerm).createQuery();
         LOGGER.info("Searching ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         FullTextQuery jpaEventQuery = fullTextEventEntityManager.createFullTextQuery(eventLuceneQuery, Event.class);
 
         List<Event> eventListWithoutPaging = null;
         try {
-        	eventListWithoutPaging = jpaEventQuery.getResultList();
+            eventListWithoutPaging = jpaEventQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
         totalCount = eventListWithoutPaging.size();
 
@@ -578,25 +610,25 @@ public class SearchService implements ISearchService {
 //        jpaQuery.setSort(sort);
         List<Event> eventList = null;
         try {
-        	eventList = jpaEventQuery.getResultList();
+            eventList = jpaEventQuery.getResultList();
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);
         } catch (NoResultException nre) {
-           LOGGER.error("error");
-           nre.printStackTrace();
+            LOGGER.error("error");
+            nre.printStackTrace();
         }
 
-        if(eventList == null || eventList.size() <= 0 ) {
-        	throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+        if (eventList == null || eventList.size() <= 0) {
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
         }
-        
+
         JSONObject jObj = new JSONObject();
-		jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null,null));
-		jObj.put(IConstants.TOTAL_RECORDS, totalCount);
-		jObj.put(IConstants.CURRENT_PAGE, pageNum);
-		jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
-		
-		result = utils.constructSucessJSON(jObj);
+        jObj.put(IConstants.EVENTS, eventHelper.buildResponseObject(eventList, null, null));
+        jObj.put(IConstants.TOTAL_RECORDS, totalCount);
+        jObj.put(IConstants.CURRENT_PAGE, pageNum);
+        jObj.put(IConstants.CURRENT_PAGE_RECORDS, eventList.size());
 
-		return result;
-	}
+        result = utils.constructSucessJSON(jObj);
+
+        return result;
+    }
 }

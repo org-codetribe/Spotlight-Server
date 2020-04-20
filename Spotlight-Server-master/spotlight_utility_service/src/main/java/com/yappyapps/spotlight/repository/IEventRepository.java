@@ -63,6 +63,10 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
 
     List<Event> findAllByEventUtcDatetimeGreaterThanEqual(Timestamp timestamp);
 
+
+    @Query(value = "select * from event where LOWER(display_name) LIKE lower(concat('%', :name,'%')) and event_UTC_Datetime >= :timestamp",nativeQuery = true)
+    List<Event> findAllByEventUtcDatetimeGreaterThanEqual(String name , Timestamp timestamp);
+
     /**
      * This method is used to find all the Events by BroadcasterInfo with paging.
      *
@@ -178,8 +182,8 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
      * This method is used to find all Event by status and isTrending.
      *
      * @param status:     String
-     * @param isTrending: Boolean
-     * @param timestamp:  Timestamp
+     * @param startTime: Boolean
+     * @param endTime:  Timestamp
      * @return List&lt;Event&gt;
      */
     List<Event> findByStatusAndEventUtcDatetimeBetween(String status, Timestamp startTime, Timestamp endTime);

@@ -230,6 +230,11 @@ public class EventService implements IEventService {
                     JSONObject transcoderObj = new JSONObject();
                     transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300).put("low_latency",true));
                     wowzaClient.executePatch("transcoders/" + wowzaJSONObject.getJSONObject("live_stream").get("id").toString(), transcoderObj);
+                    JSONObject property = new JSONObject();
+                    property.put("property", new JSONObject().put("key", "chunkSize").put("section","hls").put("value",2));
+                    wowzaClient.executePost("stream_targets/" + wowzaJSONObject.getJSONObject("live_stream").getJSONArray("stream_targets").getJSONObject(0).get("id").toString()+"/properties", property);
+
+
                 } catch (Exception e) {
                     LOGGER.error("Error in updating transcoder idle_timeout");
                 }
@@ -240,7 +245,7 @@ public class EventService implements IEventService {
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
                 try {
-//					wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
+		//			wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
                 } catch (Exception e) {
                     e.printStackTrace();
                     LOGGER.error("Could not schedule the event :::: ");
@@ -261,8 +266,16 @@ public class EventService implements IEventService {
 
                 try {
                     JSONObject transcoderObj = new JSONObject();
-                    transcoderObj.put("transcoder", new JSONObject().put("idle_timeout", 300).put("low_latency",true));
+                    transcoderObj.put("transcoder",new JSONObject().put("idle_timeout", 300).put("low_latency",true));
                     wowzaClient.executePatch("transcoders/" + wowzaJSONObject.getJSONObject("live_stream").get("id").toString(), transcoderObj);
+
+
+                    JSONObject property = new JSONObject();
+                    property.put("property", new JSONObject().put("key", "chunkSize").put("section","hls").put("value",2));
+                    wowzaClient.executePost("stream_targets/" + wowzaJSONObject.getJSONObject("live_stream").getJSONArray("stream_targets").getJSONObject(0).get("id").toString()+"/properties", property);
+
+
+
                 } catch (Exception e) {
                     LOGGER.error("Error in updating transcoder idle_timeout");
                 }

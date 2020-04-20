@@ -1,12 +1,17 @@
 package com.yappyapps.spotlight.controller;
 
-import java.io.IOException;
-import java.util.Optional;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.gson.Gson;
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.Viewer;
+import com.yappyapps.spotlight.exception.AlreadyExistException;
+import com.yappyapps.spotlight.exception.BusinessException;
+import com.yappyapps.spotlight.exception.InvalidParameterException;
+import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 import com.yappyapps.spotlight.repository.IViewerRepository;
+import com.yappyapps.spotlight.service.ISearchService;
+import com.yappyapps.spotlight.util.IConstants;
+import com.yappyapps.spotlight.util.MeteringService;
+import com.yappyapps.spotlight.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,16 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import com.google.gson.Gson;
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.exception.AlreadyExistException;
-import com.yappyapps.spotlight.exception.BusinessException;
-import com.yappyapps.spotlight.exception.InvalidParameterException;
-import com.yappyapps.spotlight.exception.ResourceNotFoundException;
-import com.yappyapps.spotlight.service.ISearchService;
-import com.yappyapps.spotlight.util.IConstants;
-import com.yappyapps.spotlight.util.MeteringService;
-import com.yappyapps.spotlight.util.Utils;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Optional;
 
 /**
  * The SearchController class is the controller which will expose the
@@ -167,7 +165,7 @@ public class SearchController {
     public @ResponseBody
     String fuzzySearchBroadcasters(@PathVariable("searchTerm") String searchTerm, @RequestParam(value = "limit", required = false) String limit,
                                    @RequestParam(value = "offset", required = false) String offset,
-                                       @RequestParam(value = "viewerId", required = false) String viewerId,
+                                   @RequestParam(value = "viewerId", required = false) String viewerId,
                                    @RequestParam(value = "direction", required = false) String direction,
                                    @RequestParam(value = "orderBy", required = false) String orderBy)
             throws InvalidParameterException, ResourceNotFoundException, BusinessException {
@@ -269,6 +267,74 @@ public class SearchController {
         }
         return result;
     }
+
+
+    @RequestMapping(value = "/fuzzy/event-type/{searchTerm}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String fuzzySearchEventsType(@PathVariable("searchTerm") String searchTerm)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "fuzzySearchEvents";
+        LOGGER.info("SearchController :: " + operation + " :: searchTerm ");
+        long startTime = System.currentTimeMillis();
+        utils.isEmptyOrNull(searchTerm, "searchTerm");
+        utils.isMinLengthValid(searchTerm, "searchTerm", 3);
+        String result = null;
+        try {
+            result = searchService.fuzzySearchEventType(searchTerm);
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
+
+
+
+
+
+
+
+    @RequestMapping(value = "/fuzzy/upcoming-event/{searchTerm}", method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_VALUE})
+    public @ResponseBody
+    String fuzzySearchUpcomingEvents(@PathVariable("searchTerm") String searchTerm)
+            throws InvalidParameterException, ResourceNotFoundException, BusinessException {
+        String operation = "fuzzySearchEvents";
+        LOGGER.info("SearchController :: " + operation + " :: searchTerm ");
+        long startTime = System.currentTimeMillis();
+        utils.isEmptyOrNull(searchTerm, "searchTerm");
+        utils.isMinLengthValid(searchTerm, "searchTerm", 3);
+        String result = null;
+        try {
+            result = searchService.fuzzySearchUpcomingEvent(searchTerm);
+        } catch (InvalidParameterException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (BusinessException e) {
+            LOGGER.error(e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            throw new BusinessException(IConstants.INTERNAL_SERVER_ERROR);
+        } finally {
+            meteringService.record(controller, operation, (System.currentTimeMillis() - startTime), 0);
+        }
+        return result;
+    }
+
 
     /**
      * This method is used to catch ResourceNotFoundException at Controller level.

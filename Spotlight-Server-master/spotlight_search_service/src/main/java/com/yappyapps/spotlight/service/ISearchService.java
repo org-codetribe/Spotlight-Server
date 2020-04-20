@@ -27,6 +27,8 @@ public interface ISearchService {
 	 *             Exception
 	 */
 	public String fuzzySearch(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception;
+	public String fuzzySearchEventType(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception;
+	public String fuzzySearchUpcomingEvent(String searchTerm) throws ResourceNotFoundException, BusinessException, Exception;
 
 	/**
 	 * This method is used to get the search result by searchterm Status with paging.
