@@ -1054,10 +1054,19 @@ public class ViewerService implements IViewerService {
             if (!viewerEntity.isPresent()) {
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
+
+           /* if(viewerEntity.isPresent()){
+                if(viewerEntity.get().getEmailVerify() == Boolean.FALSE){
+                    throw new ResourceNotFoundException("PLEASE VERIFY EMAIL");
+                }
+            }*/
+
             eventEntity = eventRepository.findById(eventId);
             if (!eventEntity.isPresent()) {
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
             }
+
+
 
             List<Order> orderRepositoryByEventId = orderRepository.findByEventIdAndViewerId(eventEntity.get().getId(), viewerEntity.get().getId());
             if (orderRepositoryByEventId != null && orderRepositoryByEventId.size() > 0) {

@@ -1,9 +1,12 @@
 package com.yappyapps.spotlight.service.impl;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
+import com.yappyapps.spotlight.domain.SpotlightUser;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONObject;
@@ -129,6 +132,22 @@ public class EventTypeService implements IEventTypeService {
 		List<EventType> eventTypeEntityList = null;
 		try {
 			eventTypeEntityList = (List<EventType>) eventTypeRepository.findAllByOrderByName();
+			List<Object[]> objects = eventTypeRepository.countEventUpcoming();
+			if (objects != null && objects.size() > 0) {
+				List<EventType> eventTypes = new ArrayList<>(objects.size());
+				for (Object[] o : objects) {
+					Integer eventCount = Integer.valueOf(o[0].toString());
+					Integer eventTypeId = Integer.valueOf(o[1].toString());
+					Optional<EventType> eventType = eventTypeRepository.findById(eventTypeId);
+					eventTypes.add(eventType.get());
+				}
+				if(eventTypeEntityList != null)
+				eventTypeEntityList.clear();
+				eventTypeEntityList = eventTypes;
+			}
+
+
+
 		} catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
 			throw new Exception(sqlException.getMessage());
 		} catch (HibernateException | JpaSystemException sqlException) {

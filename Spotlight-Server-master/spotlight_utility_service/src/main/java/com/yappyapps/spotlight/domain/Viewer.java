@@ -77,6 +77,8 @@ public class Viewer {
 	@Column(name = "STATUS", columnDefinition = "enum('Active','Inactive')")
 	@NotNull
 	private String status;
+	@Column(name = "IS_EMAIL_VERIFY", length = 255)
+	private Boolean isEmailVerify;
 
     @Transient
 	private String socialLoginType;
@@ -304,5 +306,13 @@ public class Viewer {
 
 	public void setAlternativeEmail(String alternativeEmail) {
 		this.alternativeEmail = alternativeEmail;
+	}
+
+	public Boolean getEmailVerify() {
+		return isEmailVerify;
+	}
+
+	public void setEmailVerify(Boolean emailVerify) {
+		isEmailVerify = emailVerify;
 	}
 }

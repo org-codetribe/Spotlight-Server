@@ -1,11 +1,11 @@
 package com.yappyapps.spotlight.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigInteger;
+import java.util.*;
 
+import com.yappyapps.spotlight.domain.BroadcasterInfo;
 import com.yappyapps.spotlight.domain.Role;
-import com.yappyapps.spotlight.repository.IRoleRepository;
+import com.yappyapps.spotlight.repository.*;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONObject;
@@ -29,9 +29,6 @@ import com.yappyapps.spotlight.exception.AlreadyExistException;
 import com.yappyapps.spotlight.exception.BusinessException;
 import com.yappyapps.spotlight.exception.InvalidParameterException;
 import com.yappyapps.spotlight.exception.ResourceNotFoundException;
-import com.yappyapps.spotlight.repository.IAuditLogRepository;
-import com.yappyapps.spotlight.repository.ISpotlightUserRepository;
-import com.yappyapps.spotlight.repository.ISpotlightUserSessionRepository;
 import com.yappyapps.spotlight.service.IEmailNotificationService;
 import com.yappyapps.spotlight.service.ISpotlightUserService;
 import com.yappyapps.spotlight.util.IConstants;
@@ -59,6 +56,10 @@ public class SpotlightUserService implements ISpotlightUserService {
      */
     @Autowired
     private ISpotlightUserRepository spotlightUserRepository;
+    @Autowired
+    private IEventRepository eventRepository;
+    @Autowired
+    private IBroadcasterInfoRepository broadcasterInfoRepository;
 
     /**
      * IAuditLogRepository dependency will be automatically injected.
@@ -195,6 +196,20 @@ public class SpotlightUserService implements ISpotlightUserService {
         List<SpotlightUser> spotlightUserList = null;
         try {
             spotlightUserList = (List<SpotlightUser>) spotlightUserRepository.findAll();
+            List<Object[]> objects = eventRepository.countByEventUtcDatetimeGreaterThanEqual();
+            if (objects != null && objects.size() > 0) {
+                List<SpotlightUser> spotlightUsers = new ArrayList<>(objects.size());
+                for (Object[] o : objects) {
+
+                    Integer broadcasterId =   Integer.valueOf(o[0].toString());
+                    Integer eventCount =   Integer.valueOf(o[1].toString());
+                    Optional<BroadcasterInfo> broadcasterInfo = broadcasterInfoRepository.findById(broadcasterId);
+                    spotlightUsers.add(broadcasterInfo.get().getSpotlightUser());
+                }
+                if (spotlightUserList != null)
+                    spotlightUserList.clear();
+                spotlightUserList = spotlightUsers;
+            }
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -619,4 +634,10 @@ public class SpotlightUserService implements ISpotlightUserService {
         return result;
     }
 
+}
+
+class BroadcasterComparator implements Comparator<Integer> {
+    public int compare(Integer o1, Integer o2) {
+        return Integer.compare(o1, o2);
+    }
 }

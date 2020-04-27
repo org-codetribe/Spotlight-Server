@@ -64,7 +64,7 @@ public class ViewerHelper {
     public Viewer populateViewer(Viewer viewerReqObj) {
         Viewer viewerEntity = new Viewer();
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-
+     //   viewerEntity.setEmailVerify(viewerReqObj != null ? viewerReqObj.getEmailVerify() : Boolean.FALSE);
         viewerEntity.setFname(viewerReqObj.getFname() != null ? viewerReqObj.getFname() : null);
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : null);
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : null);

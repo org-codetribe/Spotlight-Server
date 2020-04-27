@@ -83,5 +83,7 @@ public interface IEventTypeRepository extends CrudRepository<EventType, Integer>
 
     @Query(value = "select * from event_type where LOWER(name) LIKE lower(concat('%', :name,'%'))", nativeQuery = true)
     List<EventType> findByEventTypeSearch(@Param("name") String name);
+    @Query(value = "select count(e.id) as ecount , et.event_type_id from spotlight.event_type_event et INNER JOIN spotlight.event e ON et.event_id = e.id where e.event_utc_datetime >= sysdate() group by et.event_type_id order by ecount" , nativeQuery = true)
+    List<Object[]> countEventUpcoming();
 
 }

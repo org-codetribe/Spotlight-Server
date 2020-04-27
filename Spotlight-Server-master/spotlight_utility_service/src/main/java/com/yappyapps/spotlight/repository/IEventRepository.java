@@ -66,6 +66,8 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
 
     @Query(value = "select * from event where LOWER(display_name) LIKE lower(concat('%', :name,'%')) and event_UTC_Datetime >= :timestamp",nativeQuery = true)
     List<Event> findAllByEventUtcDatetimeGreaterThanEqual(String name , Timestamp timestamp);
+    @Query(value = "SELECT info.id,COUNT(event.broadcaster_info_id) AS event_count FROM spotlight.event INNER JOIN spotlight.broadcaster_info info where event.broadcaster_info_id = info.id and event_UTC_Datetime >= sysdate() group by event.broadcaster_info_id order by event_count desc",nativeQuery = true)
+    List<Object[]> countByEventUtcDatetimeGreaterThanEqual();
 
     /**
      * This method is used to find all the Events by BroadcasterInfo with paging.
