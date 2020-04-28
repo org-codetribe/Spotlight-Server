@@ -60,7 +60,7 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
     List<Event> findByBroadcasterInfo(BroadcasterInfo broadcasterInfo);
 
     List<Event> findByBroadcasterInfoAndEventUtcDatetimeGreaterThanEqual(BroadcasterInfo broadcasterInfo, Timestamp current);
-    @Query(value = "select * from event e where e.event_UTC_Datetime >= (sysdate() + event.event_duration + 1/24)",nativeQuery = true)
+    @Query(value = "select * from event e where e.event_UTC_Datetime >= (sysdate() + e.event_duration + 1/24)",nativeQuery = true)
     List<Event> findAllByEventUtcDatetimeGreaterThanEqual();
 
 
