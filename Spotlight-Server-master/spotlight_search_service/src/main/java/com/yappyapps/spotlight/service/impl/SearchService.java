@@ -545,7 +545,7 @@ public class SearchService implements ISearchService {
 
         List<Event> eventList = null;
         try {
-            eventList = eventRepository.findAllByEventUtcDatetimeGreaterThanEqual(searchTerm, new Timestamp(System.currentTimeMillis()));
+            eventList = eventRepository.findAllByEventUtcDatetimeGreaterThanEqual(searchTerm);
 
 
             LOGGER.info("Searched ::::::::::::::::::::::::::::::::::::: " + searchTerm);

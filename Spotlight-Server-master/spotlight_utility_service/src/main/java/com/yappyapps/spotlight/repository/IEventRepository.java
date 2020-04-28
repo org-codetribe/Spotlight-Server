@@ -60,13 +60,13 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
     List<Event> findByBroadcasterInfo(BroadcasterInfo broadcasterInfo);
 
     List<Event> findByBroadcasterInfoAndEventUtcDatetimeGreaterThanEqual(BroadcasterInfo broadcasterInfo, Timestamp current);
+    @Query(value = "from event e where e.event_UTC_Datetime >= (sysdate() + event.event_duration + 1/24)",nativeQuery = true)
+    List<Event> findAllByEventUtcDatetimeGreaterThanEqual();
 
-    List<Event> findAllByEventUtcDatetimeGreaterThanEqual(Timestamp timestamp);
 
-
-    @Query(value = "select * from event where LOWER(display_name) LIKE lower(concat('%', :name,'%')) and event_UTC_Datetime >= :timestamp",nativeQuery = true)
-    List<Event> findAllByEventUtcDatetimeGreaterThanEqual(String name , Timestamp timestamp);
-    @Query(value = "SELECT info.id,COUNT(event.broadcaster_info_id) AS event_count FROM spotlight.event INNER JOIN spotlight.broadcaster_info info where event.broadcaster_info_id = info.id and event_UTC_Datetime >= sysdate() group by event.broadcaster_info_id order by event_count desc",nativeQuery = true)
+    @Query(value = "select * from event where LOWER(display_name) LIKE lower(concat('%', :name,'%')) and event_UTC_Datetime >= (sysdate() + event.event_duration + 1/24)",nativeQuery = true)
+    List<Event> findAllByEventUtcDatetimeGreaterThanEqual(String name);
+    @Query(value = "SELECT info.id,COUNT(event.broadcaster_info_id) AS event_count FROM spotlight.event INNER JOIN spotlight.broadcaster_info info where event.broadcaster_info_id = info.id and event_UTC_Datetime >= (sysdate()+event.event_duration + 1/24) group by event.broadcaster_info_id order by event_count desc",nativeQuery = true)
     List<Object[]> countByEventUtcDatetimeGreaterThanEqual();
 
     /**
