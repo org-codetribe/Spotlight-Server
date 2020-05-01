@@ -224,7 +224,7 @@ public class ViewerRestController {
                     Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
                     if (walletRep == null) {
                         Wallet wallet = new Wallet();
-                        wallet.setAmount(0.00);
+                        wallet.setAmount(1000.00);
                         wallet.setViewerId(viewer1.getId());
                         wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
@@ -272,7 +272,7 @@ public class ViewerRestController {
                     Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
                     if (walletRep == null) {
                         Wallet wallet = new Wallet();
-                        wallet.setAmount(0.00);
+                        wallet.setAmount(1000.00);
                         wallet.setViewerId(viewer1.getId());
                         wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
@@ -335,7 +335,7 @@ public class ViewerRestController {
                     Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
                     if (walletRep == null) {
                         Wallet wallet = new Wallet();
-                        wallet.setAmount(0.00);
+                        wallet.setAmount(1000.00);
                         wallet.setViewerId(viewer1.getId());
                         wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
@@ -358,7 +358,7 @@ public class ViewerRestController {
                     Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
                     if (walletRep == null) {
                         Wallet wallet = new Wallet();
-                        wallet.setAmount(0.00);
+                        wallet.setAmount(1000.00);
                         wallet.setViewerId(viewer1.getId());
                         wallet.setCreatedOn(new Timestamp(System.currentTimeMillis()));
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
