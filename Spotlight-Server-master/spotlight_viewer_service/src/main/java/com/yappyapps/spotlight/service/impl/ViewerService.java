@@ -2,11 +2,15 @@ package com.yappyapps.spotlight.service.impl;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import com.yappyapps.spotlight.domain.*;
 import com.yappyapps.spotlight.repository.*;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.joda.time.Minutes;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1072,6 +1076,14 @@ public class ViewerService implements IViewerService {
             if (orderRepositoryByEventId != null && orderRepositoryByEventId.size() > 0) {
                 throw new AlreadyExistException("You have Already purchased this event . now you can not buy again ");
             }
+
+           Integer duration_ =  eventEntity.get().getEventDuration();
+            long eventUtcDatetime = eventEntity.get().getEventUtcDatetime().getTime();
+            long diff = System.currentTimeMillis() - eventUtcDatetime;//as given
+            long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
+            if(!((duration_ - 5) <= minutes)){
+                throw new AlreadyExistException("Event can not purchase , time has been expired");
+            }
             walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
             Double minusAmount = null;
             if (walletEntity != null) {
@@ -1148,6 +1160,7 @@ public class ViewerService implements IViewerService {
         }
         return result;
     }
+
 
 
 }

@@ -13,7 +13,7 @@ import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 /**
  * The ISpotlightUserService interface declares all the operations to act upon
  * Event
- * 
+ *
  * @author Naveen Goswami
  * @version 1.0
  * @since 2018-08-14
@@ -56,7 +56,7 @@ public interface IEventService {
 
 	/**
 	 * This method is used to get all Events by EventType.
-	 * 
+	 *
 	 * @param eventTypeId:
 	 * 				Integer
 	 * @return String: Response

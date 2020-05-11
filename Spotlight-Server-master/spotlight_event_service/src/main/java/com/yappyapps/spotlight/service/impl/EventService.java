@@ -240,12 +240,12 @@ public class EventService implements IEventService {
                 }
 
                 liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());
-                Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() - 2 * 60 * 1000);
-                Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 2 * 60 * 1000);
+                Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() - 3 * 60 * 1000);
+                Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
                 try {
-		//			wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
+					wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
                 } catch (Exception e) {
                     e.printStackTrace();
                     LOGGER.error("Could not schedule the event :::: ");
@@ -285,7 +285,7 @@ public class EventService implements IEventService {
                 Date stopTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() + eventEntity.getEventDuration() * 60 * 1000 + 5 * 60 * 1000);
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
-//				wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
+				wowzaScheduleResponse = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule());
                 wowzaJSONObject.getJSONObject("live_stream").put("schedule", wowzaScheduleResponse);
 
                 String connectionCode = wowzaJSONObject.getJSONObject("live_stream").getString("connection_code");
@@ -364,7 +364,7 @@ public class EventService implements IEventService {
 
         List<Event> eventList = null;
         try {
-            eventList = (List<Event>) eventRepository.findAll();
+            eventList = (List<Event>) eventRepository.findAllByEventUtcDatetimeGreaterThanEqual();
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -431,6 +431,7 @@ public class EventService implements IEventService {
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
             eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
+            eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeDesc(eventTypeEntity.get(),new Timestamp(System.currentTimeMillis()));
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -460,7 +461,7 @@ public class EventService implements IEventService {
             if (!eventTypeEntity.isPresent())
                 throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
-            eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeAsc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
+            eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeDesc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
         } catch (HibernateException | JpaSystemException sqlException) {
@@ -502,7 +503,7 @@ public class EventService implements IEventService {
 
 
             if (eventTypeEntity != null)
-                eventList = (List<Event>) eventRepository.findByEventType(eventTypeEntity.get());
+                eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeDesc(eventTypeEntity.get(),new Timestamp(System.currentTimeMillis()));
             else
                 eventList = (List<Event>) eventRepository.findAll();
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
@@ -545,7 +546,7 @@ public class EventService implements IEventService {
 
 
             if (eventTypeEntity != null)
-                eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeAsc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
+                eventList = (List<Event>) eventRepository.findByEventTypeAndEventUtcDatetimeIsGreaterThanEqualOrderByEventUtcDatetimeDesc(eventTypeEntity.get(), new Timestamp(System.currentTimeMillis()));
             else
                 eventList = (List<Event>) eventRepository.findAllByEventUtcDatetimeGreaterThanEqual();
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
@@ -607,6 +608,7 @@ public class EventService implements IEventService {
                         } else {
                             String state = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
                             event.get().setLiveStreamState(state);
+                            eventRepository.save(event.get());
                             if (!state.equals("starting")) {
                                 wowzaResponse = wowzaClient.executePut("live_streams/" + liveStreamId + "/start");
                                 String stateStart = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
@@ -671,10 +673,13 @@ public class EventService implements IEventService {
                         if (wowzaEventDeleted != null && wowzaEventDeleted.getMeta() != null) {
                             String message = wowzaEventDeleted.getMeta().getMessage();
                             event.get().setLiveStreamState(message);
+                            eventRepository.save(event.get());
+
                         } else {
                             //wowzaResponse = wowzaClient.executeGet("live_streams/" + liveStreamId + "/state");
                             String state = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
                             event.get().setLiveStreamState(state);
+                            eventRepository.save(event.get());
                             if (!state.equals("stopped")) {
                                 wowzaResponse = wowzaClient.executePut("live_streams/" + liveStreamId + "/stop");
                                 String stateStart = new JSONObject(wowzaResponse).getJSONObject("live_stream").get("state").toString();
@@ -1259,6 +1264,7 @@ public class EventService implements IEventService {
             if (viewerId != null)
                 viewerEntity = viewerRepository.findById(viewerId);
             eventList = (List<Event>) eventRepository.findByBroadcasterInfo(broadcasterInfo);
+            eventRepository.findByBroadcasterInfoAndEventUtcDatetimeGreaterThanEqualOrderByEventUtcDatetimeDesc(broadcasterInfo,new Timestamp(System.currentTimeMillis()));
 
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
@@ -1299,7 +1305,7 @@ public class EventService implements IEventService {
         try {
             if (viewerId != null)
                 viewerEntity = viewerRepository.findById(viewerId);
-            eventList = (List<Event>) eventRepository.findByBroadcasterInfoAndEventUtcDatetimeGreaterThanEqual(broadcasterInfo, new Timestamp(System.currentTimeMillis()));
+            eventList = (List<Event>) eventRepository.findByBroadcasterInfoAndEventUtcDatetimeGreaterThanEqualOrderByEventUtcDatetimeDesc(broadcasterInfo, new Timestamp(System.currentTimeMillis()));
 
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
@@ -2179,7 +2185,7 @@ public class EventService implements IEventService {
         try {
             if (viewerId != null)
                 viewerEntity = viewerRepository.findById(viewerId);
-            eventList = (List<Event>) eventRepository.findByBroadcasterInfoAndStatus(broadcasterInfo, status);
+            eventList = (List<Event>) eventRepository.findByBroadcasterInfoAndStatusAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(broadcasterInfo, status,new Timestamp(System.currentTimeMillis()));
 
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             throw new Exception(sqlException.getMessage());
