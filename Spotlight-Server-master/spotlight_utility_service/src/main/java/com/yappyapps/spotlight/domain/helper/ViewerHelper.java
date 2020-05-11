@@ -155,17 +155,17 @@ public class ViewerHelper {
         viewerObj.put("createdOn", order.getCreatedOn());
         if (order.getViewerId() != null) {
             Optional<Viewer> viewer = viewerRepository.findById(order.getViewerId());
-            viewerObj.put("viewer", buildResponseObject(viewer.get()));
+            if (order.getEventId() != null) {
+                Event event = eventRepository.findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(order.getEventId(),new Timestamp(System.currentTimeMillis()));
+                if(event != null){
+                    viewerObj.put("viewer", buildResponseObject(viewer.get()));
+                    viewerObj.put("event", eventHelper.buildResponseObject(event, null, true, new EventType()));
+                }
+
+
+            }
 
         }
-        if (order.getEventId() != null) {
-            Event event = eventRepository.findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(order.getEventId(),new Timestamp(System.currentTimeMillis()));
-            if(event != null)
-            viewerObj.put("event", eventHelper.buildResponseObject(event, null, true, new EventType()));
-
-        }
-
-
         LOGGER.debug("Viewer Response Object built for Order Object id :::: " + order.getId());
         return viewerObj;
 

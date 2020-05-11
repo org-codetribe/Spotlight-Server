@@ -1077,13 +1077,13 @@ public class ViewerService implements IViewerService {
                 throw new AlreadyExistException("You have Already purchased this event . now you can not buy again ");
             }
 
-           Integer duration_ =  eventEntity.get().getEventDuration();
+           /*Integer duration_ =  eventEntity.get().getEventDuration();
             long eventUtcDatetime = eventEntity.get().getEventUtcDatetime().getTime();
             long diff = System.currentTimeMillis() - eventUtcDatetime;//as given
             long minutes = TimeUnit.MILLISECONDS.toMinutes(diff);
             if(!((duration_ - 5) <= minutes)){
                 throw new AlreadyExistException("Event can not purchase , time has been expired");
-            }
+            }*/
             walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
             Double minusAmount = null;
             if (walletEntity != null) {
