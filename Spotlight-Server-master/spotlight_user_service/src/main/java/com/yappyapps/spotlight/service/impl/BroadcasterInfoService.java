@@ -963,7 +963,7 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
 			}*/
 
             if (broadcasterInfoReqObj.getStatus() != null && broadcasterInfoReqObj.getStatus().equalsIgnoreCase("InActive")) {
-                List<Event> eventList = eventRepository.findByBroadcasterInfoAndStatusAndEventUtcDatetimeGreaterThan(broadcasterInfoEntity.get(), "Active", new Timestamp(System.currentTimeMillis()));
+                List<Event> eventList = eventRepository.findByBroadcasterInfoAndStatusAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(broadcasterInfoEntity.get(), "Active", new Timestamp(System.currentTimeMillis()));
 
                 if (!eventList.isEmpty()) {
                     throw new InvalidParameterException("We cannot deactivate the broadcaster as there are upcoming events for the broadcaster.");
