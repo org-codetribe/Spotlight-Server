@@ -149,20 +149,19 @@ public class ViewerHelper {
 
     public JSONObject buildResponseObjectForOrder(Order order) throws JSONException {
         JSONObject viewerObj = new JSONObject();
-        viewerObj.put("id", order.getId());
-        viewerObj.put("eventId", order.getEventId());
-        viewerObj.put("price", order.getPrice());
-        viewerObj.put("createdOn", order.getCreatedOn());
+
         if (order.getViewerId() != null) {
             Optional<Viewer> viewer = viewerRepository.findById(order.getViewerId());
             if (order.getEventId() != null) {
                 Event event = eventRepository.findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(order.getEventId(),new Timestamp(System.currentTimeMillis()));
                 if(event != null){
+                    viewerObj.put("id", order.getId());
+                    viewerObj.put("eventId", order.getEventId());
+                    viewerObj.put("price", order.getPrice());
+                    viewerObj.put("createdOn", order.getCreatedOn());
                     viewerObj.put("viewer", buildResponseObject(viewer.get()));
                     viewerObj.put("event", eventHelper.buildResponseObject(event, null, true, new EventType()));
                 }
-
-
             }
 
         }
