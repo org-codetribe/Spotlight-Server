@@ -159,8 +159,9 @@ public class ViewerHelper {
 
         }
         if (order.getEventId() != null) {
-            Optional<Event> event = eventRepository.findById(order.getEventId());
-            viewerObj.put("event", eventHelper.buildResponseObject(event.get(), null, true, new EventType()));
+            Event event = eventRepository.findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(order.getEventId(),new Timestamp(System.currentTimeMillis()));
+            if(event != null)
+            viewerObj.put("event", eventHelper.buildResponseObject(event, null, true, new EventType()));
 
         }
 

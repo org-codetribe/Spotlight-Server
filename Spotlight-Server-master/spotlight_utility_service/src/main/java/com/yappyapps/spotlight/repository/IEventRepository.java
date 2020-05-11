@@ -151,6 +151,8 @@ public interface IEventRepository extends CrudRepository<Event, Integer> {
     List<Event> findByBroadcasterInfoAndStatusAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(BroadcasterInfo broadcasterInfo,
                                                                              String status, Timestamp timestamp);
 
+    Event findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(Integer id, Timestamp timestamp);
+
     /**
      * This method is used to find all Event by  Broadcaster and and status.
      *
