@@ -148,13 +148,13 @@ public class ViewerHelper {
 
 
     public JSONObject buildResponseObjectForOrder(Order order) throws JSONException {
-        JSONObject viewerObj = new JSONObject();
-
+        JSONObject viewerObj = null;
         if (order.getViewerId() != null) {
             Optional<Viewer> viewer = viewerRepository.findById(order.getViewerId());
             if (order.getEventId() != null) {
                 Event event = eventRepository.findByIdAndEventUtcDatetimeGreaterThanOrderByEventUtcDatetimeDesc(order.getEventId(),new Timestamp(System.currentTimeMillis()));
                 if(event != null){
+                    viewerObj = new JSONObject();
                     viewerObj.put("id", order.getId());
                     viewerObj.put("eventId", order.getEventId());
                     viewerObj.put("price", order.getPrice());
@@ -193,6 +193,7 @@ public class ViewerHelper {
         JSONArray viewerArr = new JSONArray();
         for (Order order : orderList) {
             JSONObject viewerObj = buildResponseObjectForOrder(order);
+            if(viewerObj != null)
             viewerArr.put(viewerObj);
         }
         LOGGER.debug("Orders Response Array built with size :::: " + viewerArr.length());
