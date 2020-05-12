@@ -157,7 +157,8 @@ public class PaymentController {
         utils.isIntegerGreaterThanZero(payment.getEvent().getId(), "Event Id");
         utils.isIntegerGreaterThanZero(payment.getViewer().getId(), "Viewer Id");
         try {
-            result = paymentService.paymentTransaction(payment);
+           // result = paymentService.paymentTransaction(payment);
+            result = paymentService.onlinePaymentTransaction(payment);
         } catch (InvalidParameterException e) {
             LOGGER.error(e.getMessage());
             throw e;

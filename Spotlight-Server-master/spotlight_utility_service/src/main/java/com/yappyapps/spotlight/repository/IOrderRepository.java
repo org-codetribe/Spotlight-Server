@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.repository;
 
+import com.yappyapps.spotlight.domain.Event;
 import com.yappyapps.spotlight.domain.Order;
 import com.yappyapps.spotlight.domain.Viewer;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -21,5 +22,6 @@ public interface IOrderRepository extends JpaRepository<Order, Integer> {
     List<Order> findByViewerId(Integer viewerId);
 
     List<Order> findByEventIdAndViewerId(Integer eventId,Integer viewerId);
+    Long countByEventId(Integer event);
 
 }

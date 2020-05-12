@@ -1,13 +1,18 @@
 package com.yappyapps.spotlight.service.impl;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
+import com.braintreegateway.*;
+import com.braintreegateway.Transaction.Status;
 import com.yappyapps.spotlight.domain.*;
+import com.yappyapps.spotlight.domain.helper.CouponHelper;
+import com.yappyapps.spotlight.exception.AlreadyExistException;
+import com.yappyapps.spotlight.exception.BusinessException;
+import com.yappyapps.spotlight.exception.InvalidParameterException;
+import com.yappyapps.spotlight.exception.ResourceNotFoundException;
 import com.yappyapps.spotlight.repository.*;
+import com.yappyapps.spotlight.service.IPaymentService;
+import com.yappyapps.spotlight.util.IConstants;
+import com.yappyapps.spotlight.util.Payment;
+import com.yappyapps.spotlight.util.Utils;
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.json.JSONObject;
@@ -19,24 +24,11 @@ import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.braintreegateway.BraintreeGateway;
-import com.braintreegateway.ClientTokenRequest;
-import com.braintreegateway.CreditCard;
-import com.braintreegateway.Customer;
-import com.braintreegateway.Result;
-import com.braintreegateway.Transaction;
-import com.braintreegateway.Transaction.Status;
-import com.braintreegateway.TransactionRequest;
-import com.braintreegateway.ValidationError;
-import com.yappyapps.spotlight.domain.helper.CouponHelper;
-import com.yappyapps.spotlight.exception.AlreadyExistException;
-import com.yappyapps.spotlight.exception.BusinessException;
-import com.yappyapps.spotlight.exception.InvalidParameterException;
-import com.yappyapps.spotlight.exception.ResourceNotFoundException;
-import com.yappyapps.spotlight.service.IPaymentService;
-import com.yappyapps.spotlight.util.IConstants;
-import com.yappyapps.spotlight.util.Payment;
-import com.yappyapps.spotlight.util.Utils;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * The PaymentService class is the implementation of IPaymentService
@@ -67,6 +59,8 @@ public class PaymentService implements IPaymentService {
     @Autowired
     private BraintreeGateway gateway;
 
+    @Autowired
+    private IOrderRepository orderRepository;
     /**
      * ICouponRepository dependency will be automatically injected.
      * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
@@ -109,11 +103,11 @@ public class PaymentService implements IPaymentService {
     @Autowired
     private ICouponPaymentTransactionRepository couponPaymentTransactionRepository;
 
-	@Autowired
-	private IWalletRepository walletRepository;
+    @Autowired
+    private IWalletRepository walletRepository;
 
 
-	/**
+    /**
      * IViewerRepository dependency will be automatically injected.
      * <h1>@Autowired</h1> will enable auto injecting the beans from Spring Context.
      */
@@ -222,11 +216,15 @@ public class PaymentService implements IPaymentService {
         if (!viewerEntity.isPresent())
             throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
 
-        Boolean eventPurchased = viewerEventRepository.existsByEventAndViewer(eventEntity.get(), viewerEntity.get());
-
-        if (eventPurchased) {
+        //Boolean eventPurchased = viewerEventRepository.existsByEventAndViewer(eventEntity.get(), viewerEntity.get());
+        List<Order> byEventIdAndViewerId = orderRepository.findByEventIdAndViewerId(eventEntity.get().getId(), viewerEntity.get().getId());
+        if (byEventIdAndViewerId != null && byEventIdAndViewerId.size() > 0) {
             throw new AlreadyExistException("Viewer has already purchased the specified Event.");
         }
+
+        /*if (eventPurchased) {
+            throw new AlreadyExistException("Viewer has already purchased the specified Event.");
+        }*/
 
 
         //submit the request for processing
@@ -292,7 +290,7 @@ public class PaymentService implements IPaymentService {
 
         PaymentTransaction paymentTransaction = new PaymentTransaction();
         paymentTransaction.setAmount(eventEntity.get().getActualPrice());
-       // paymentTransaction.setEvent(eventEntity.get());
+        //paymentTransaction.setEvent(eventEntity.get());
         paymentTransaction.setPaymentDatetime(currentTime);
         paymentTransaction.setPaymentMethod("BRAINTREE");
         paymentTransaction.setPaymentType("Credit");
@@ -563,25 +561,119 @@ public class PaymentService implements IPaymentService {
         Transaction transaction = null;
         if (transactionResult.isSuccess()) {
             transaction = transactionResult.getTarget();
-			Wallet walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
-			Double totalAmount = null;
-			if (walletEntity != null) {
+            Wallet walletEntity = walletRepository.findByViewerId(viewerEntity.get().getId());
+            Double totalAmount = null;
+            if (walletEntity != null) {
 
-				if(walletEntity.getAmount() == null){
-					walletEntity.setAmount(0.00);
-				}
-				if (walletEntity.getAmount() != null) {
-					totalAmount = (walletEntity.getAmount() + transaction.getAmount().doubleValue());
-					walletEntity.setAmount(totalAmount);
-					walletEntity.setPaymentMethodType("BRAINTREE");
-					walletRepository.save(walletEntity);
+                if (walletEntity.getAmount() == null) {
+                    walletEntity.setAmount(0.00);
+                }
+                if (walletEntity.getAmount() != null) {
+                    totalAmount = (walletEntity.getAmount() + transaction.getAmount().doubleValue());
+                    walletEntity.setAmount(totalAmount);
+                    walletEntity.setPaymentMethodType("BRAINTREE");
+                    walletRepository.save(walletEntity);
 
-				} else {
-					throw new ResourceNotFoundException("wallet amount can not be null or empty !");
-				}
-			} else {
-				throw new ResourceNotFoundException("Wallet not exist yet !");
-			}
+                } else {
+                    throw new ResourceNotFoundException("wallet amount can not be null or empty !");
+                }
+            } else {
+                throw new ResourceNotFoundException("Wallet not exist yet !");
+            }
+
+
+        } else if (transactionResult.getTransaction() != null) {
+            transaction = transactionResult.getTransaction();
+        } else {
+            //if the transaction failed, return to the payment page and display all errors
+            String errorString = "";
+            for (ValidationError error : transactionResult.getErrors().getAllDeepValidationErrors()) {
+                errorString += "Error: " + error.getCode() + ": " + error.getMessage() + "\n";
+            }
+            throw new Exception(errorString);
+        }
+
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        PaymentTransaction paymentTransaction = new PaymentTransaction();
+        paymentTransaction.setAmount(transaction.getAmount().floatValue());
+        //paymentTransaction.setEvent(eventEntity.get());
+        paymentTransaction.setPaymentDatetime(currentTime);
+        paymentTransaction.setPaymentMethod("BRAINTREE");
+        paymentTransaction.setPaymentType("Credit");
+        paymentTransaction.setStatus(IConstants.DEFAULT_STATUS);
+        paymentTransaction.setTransactionId(transaction.getId());
+        paymentTransaction.setViewer(viewerEntity.get());
+
+        try {
+
+            paymentTransaction = paymentTransactionRepository.save(paymentTransaction);
+        } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        } catch (HibernateException | JpaSystemException sqlException) {
+            throw new Exception(sqlException.getMessage());
+        }
+
+//		JSONObject jObj = new JSONObject();
+//		jObj.put(IConstants.TRANSACTION, transactionResult.toString());
+//		result = utils.constructSucessJSON(jObj);
+
+
+        return transactionResult;
+    }
+
+    @Transactional
+    public Result<Transaction> onlinePaymentTransaction(Payment payment) throws ResourceNotFoundException, BusinessException, Exception {
+        String result = "";
+        Optional<Viewer> viewerEntity = viewerRepository.findById(payment.getViewer().getId());
+        if (!viewerEntity.isPresent())
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+
+        Optional<Event> eventEntity = eventRepository.findById(payment.getEvent().getId());
+        if (!eventEntity.isPresent())
+            throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
+
+        Long soldSeats = orderRepository.countByEventId(eventEntity.get().getId());
+
+
+        long remainingSeats = eventEntity.get().getTotalSeats() - soldSeats;
+
+        if (remainingSeats <= 0)
+            throw new InvalidParameterException("Tickets for the Event is already Sold.");
+
+
+        //Boolean eventPurchased = viewerEventRepository.existsByEventAndViewer(eventEntity.get(), viewerEntity.get());
+        List<Order> byEventIdAndViewerId = orderRepository.findByEventIdAndViewerId(eventEntity.get().getId(), viewerEntity.get().getId());
+        if (byEventIdAndViewerId != null && byEventIdAndViewerId.size() > 0) {
+            throw new AlreadyExistException("Viewer has already purchased the specified Event.");
+        }
+
+
+        //submit the request for processing
+        TransactionRequest request = new TransactionRequest()
+                .amount(payment.getChargeAmount())
+                .paymentMethodNonce(payment.getNonce())
+                .options()
+                .submitForSettlement(true)
+                .done();
+
+        //get the response
+        Result<Transaction> transactionResult = gateway.transaction().sale(request);
+
+
+        ////TODO save event for viewer
+
+        Transaction transaction = null;
+        if (transactionResult.isSuccess()) {
+            transaction = transactionResult.getTarget();
+            Order order = new Order();
+            order.setQuantity(1);
+            order.setEventId(eventEntity.get().getId());
+            order.setViewerId(viewerEntity.get().getId());
+            order.setPrice(eventEntity.get().getActualPrice());
+            order.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
+            order.setCreatedOn(new Timestamp(System.currentTimeMillis()));
+            order = orderRepository.save(order);
 
 
         } else if (transactionResult.getTransaction() != null) {

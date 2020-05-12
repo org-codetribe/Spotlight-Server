@@ -35,5 +35,6 @@ public interface IPaymentService {
     public String couponTransaction(Payment payment) throws ResourceNotFoundException, BusinessException, Exception;
 
     public Result<Transaction> purchaseCoupon(Payment payment) throws ResourceNotFoundException, BusinessException, Exception;
+    public Result<Transaction> onlinePaymentTransaction(Payment payment) throws ResourceNotFoundException, BusinessException, Exception;
 
 }
