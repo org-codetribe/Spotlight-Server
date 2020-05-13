@@ -345,14 +345,6 @@ public class LiveStream {
 		jObj.put("encoder", "wowza_streaming_engine");
 		jObj.put("name", name);
 		jObj.put("delivery_protocol", "hls");
-		jObj.put("target_delivery_protocol", "hls-https");
-		jObj.put("player_responsive", true);
-		jObj.put("aspect_ratio_height", aspectRatioHeight);
-		jObj.put("aspect_ratio_width", aspectRatioWidth);
-		jObj.put("hosted_page", false);
-		jObj.put("player_type", playerType);
-		jObj.put("low_latency", true);
-		
 		JSONObject jObj1 = new JSONObject();
 		jObj1.put("live_stream", jObj);
 		
@@ -395,4 +387,32 @@ public class LiveStream {
 		
 		return jObj;
 	}
+
+
+
+
+
+
+
+
+
+	public JSONObject getCloudJSONObjectForWebRtc(String name) {
+		JSONObject jObj = new JSONObject();
+		jObj.put("aspect_ratio_height", 720);
+		jObj.put("aspect_ratio_width", 1280);
+		jObj.put("billing_mode", "pay_as_you_go");
+		jObj.put("broadcast_location", "us_west_california");
+		jObj.put("delivery_method", "push");
+		jObj.put("encoder", "other_webrtc");
+		jObj.put("name", name);
+		jObj.put("transcoder_type", "transcoded");
+		JSONObject jObj1 = new JSONObject();
+		jObj1.put("live_stream", jObj);
+		return jObj1;
+	}
+
+
+
+
+
 }

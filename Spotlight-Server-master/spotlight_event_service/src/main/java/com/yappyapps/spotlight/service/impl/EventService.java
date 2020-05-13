@@ -259,14 +259,23 @@ public class EventService implements IEventService {
                 liveStream.setUri(eventEntity.getLiveStreamConfig().getHost());
 //				JSONObject jObj = new JSONObject();
 //				jObj.put("live_stream", liveStream.getJSONObject());
-                wowzaResponse = wowzaClient.executePost("live_streams", liveStream.getCloudJSONObjectForEngine());
+                wowzaResponse = wowzaClient.executePost("live_streams", liveStream.getCloudJSONObjectForWebRtc(eventEntity.getDisplayName()));
 //				wowzaResponse = wowzaClient.executeGet("applications/"+liveStream.getName());
                 LOGGER.info("wowzaResponse :::: " + wowzaResponse);
                 wowzaJSONObject = new JSONObject(wowzaResponse.toString());
 
                 try {
                     JSONObject transcoderObj = new JSONObject();
-                    transcoderObj.put("transcoder",new JSONObject().put("idle_timeout", 300).put("low_latency",true));
+                    JSONObject jObj = new JSONObject();
+                    jObj.put("billing_mode", "pay_as_you_go");
+                    jObj.put("broadcast_location", "us_west_california");
+                    jObj.put("delivery_method", "push");
+                    jObj.put("protocol", "webrtc");
+                    jObj.put("name", eventEntity.getDisplayName());
+                    jObj.put("transcoder_type", "transcoded");
+                    jObj.put("idle_timeout", 300);
+                    jObj.put("low_latency",true);
+                    transcoderObj.put("transcoder",jObj);
                     wowzaClient.executePatch("transcoders/" + wowzaJSONObject.getJSONObject("live_stream").get("id").toString(), transcoderObj);
 
 
