@@ -1,5 +1,6 @@
 package com.yappyapps.spotlight.domain;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 import org.json.JSONObject;
@@ -351,11 +352,11 @@ public class LiveStream {
 		return jObj1;
 	}
 
-	public JSONObject getCloudJSONObjectForSchedule() {
+	public JSONObject getCloudJSONObjectForSchedule(String transcoderId, Timestamp startTranscoderDate, Timestamp stopTranscoderDate ) {
 		JSONObject jObj = new JSONObject();
 		jObj.put("action_type", "start_stop");
 		jObj.put("name", name + "Scheduler");
-		jObj.put("transcoder_id", wowzaEventId);
+		jObj.put("transcoder_id",transcoderId);
 //		jObj.put("transcoder_name", "wowza_streaming_engine");
 		jObj.put("recurrence_type", "once");
 		jObj.put("start_transcoder", startTranscoderDate);
