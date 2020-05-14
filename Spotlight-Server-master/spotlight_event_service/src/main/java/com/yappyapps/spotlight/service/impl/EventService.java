@@ -241,9 +241,9 @@ public class EventService implements IEventService {
                     LOGGER.error("Error in updating transcoder idle_timeout");
                 }
 
-                liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());
-                Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() - 3 * 60 * 1000);
-                Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
+                liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());//eventEntity.getTimezone()
+                Date startTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), "UTC").getTime() - 3 * 60 * 1000);
+                Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), "UTC").getTime() + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
 
@@ -295,7 +295,7 @@ public class EventService implements IEventService {
 
                 liveStream.setWowzaEventId(wowzaJSONObject.getJSONObject("live_stream").get("id").toString());
                 Date startTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() - 3 * 60 * 1000);
-                Date stopTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime() + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
+                Date stopTranscoderDate = new Date(eventEntity.getEventUtcDatetime().getTime () + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
 				String schedules = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule(wowzaJSONObject.getJSONObject("live_stream").getJSONObject("transcoder").getJSONObject("transcoder").get("id").toString(),new Timestamp(startTranscoderDate.getTime()),new Timestamp(stopTranscoderDate.getTime())));

@@ -259,7 +259,7 @@ public class SpotlightUserHelper {
         JSONArray spotlightUserArr = new JSONArray();
         for (SpotlightUser spotlightUser : spotlightUserList) {
             if (!spotlightUser.getUserType().equalsIgnoreCase("SUPERADMIN")) {
-                JSONObject spotlightUserObj = buildResponseObject(spotlightUser);
+                JSONObject  spotlightUserObj = buildResponseObject(spotlightUser);
                 spotlightUserArr.put(spotlightUserObj);
             }
         }
