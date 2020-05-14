@@ -235,7 +235,7 @@ public class EventService implements IEventService {
                     JSONObject property = new JSONObject();
                     property.put("property", new JSONObject().put("key", "chunkSize").put("section","hls").put("value",2));
                     String stream_targets = wowzaClient.executePost("stream_targets/" + wowzaJSONObject.getJSONObject("live_stream").getJSONArray("stream_targets").getJSONObject(0).get("id").toString()+"/properties", property);
-                    wowzaJSONObject.getJSONObject("live_stream").put("stream_targets", stream_targets);
+                    wowzaJSONObject.getJSONObject("live_stream").put("stream_targets", new JSONObject(stream_targets));
 
                 } catch (Exception e) {
                     LOGGER.error("Error in updating transcoder idle_timeout");
@@ -246,15 +246,16 @@ public class EventService implements IEventService {
                 Date stopTranscoderDate = new Date(utils.convertOtherTimeZoneToUTC(eventEntity.getEventUtcDatetime(), eventEntity.getTimezone()).getTime() + eventEntity.getEventDuration() * 60 * 1000 + 3 * 60 * 1000);
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
-                String schedules = null;
+
                 try {
-					schedules = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule(wowzaJSONObject.getJSONObject("live_stream").getJSONObject("transcoder").getJSONObject("transcoder").get("id").toString(),new Timestamp(startTranscoderDate.getTime()),new Timestamp(stopTranscoderDate.getTime())));
+                    String schedules = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule(wowzaJSONObject.getJSONObject("live_stream").getJSONObject("transcoder").getJSONObject("transcoder").get("id").toString(),new Timestamp(startTranscoderDate.getTime()),new Timestamp(stopTranscoderDate.getTime())));
+                    if(schedules != null)
+                        wowzaJSONObject.getJSONObject("live_stream").put("schedule", new JSONObject(schedules));
                 } catch (Exception e) {
                     e.printStackTrace();
                     LOGGER.error("Could not schedule the event :::: ");
                 }
-                if(schedules != null)
-                wowzaJSONObject.getJSONObject("live_stream").put("schedule", schedules);
+
             } else if (eventEntity.getLiveStreamConfig().getConnectionType().equalsIgnoreCase("Server")) {
                 LiveStreamConfig liveStreamConfig = liveStreamConfigRepository.findByConnectionType("Cloud");
                 wowzaClient = new WowzaClient(liveStreamConfig);
@@ -285,7 +286,7 @@ public class EventService implements IEventService {
                     JSONObject property = new JSONObject();
                     property.put("property", new JSONObject().put("key", "chunkSize").put("section","hls").put("value",2));
                     String stream = wowzaClient.executePost("stream_targets/" + wowzaJSONObject.getJSONObject("live_stream").getJSONArray("stream_targets").getJSONObject(0).get("id").toString()+"/properties", property);
-                    wowzaJSONObject.getJSONObject("live_stream").put("stream_targets",stream);
+                    wowzaJSONObject.getJSONObject("live_stream").put("stream_targets",new JSONObject(stream));
 
 
                 } catch (Exception e) {
@@ -298,7 +299,7 @@ public class EventService implements IEventService {
                 liveStream.setStartTranscoderDate(startTranscoderDate);
                 liveStream.setStopTranscoderDate(stopTranscoderDate);
 				String schedules = wowzaClient.executePost("schedules", liveStream.getCloudJSONObjectForSchedule(wowzaJSONObject.getJSONObject("live_stream").getJSONObject("transcoder").getJSONObject("transcoder").get("id").toString(),new Timestamp(startTranscoderDate.getTime()),new Timestamp(stopTranscoderDate.getTime())));
-                wowzaJSONObject.getJSONObject("live_stream").put("schedule", schedules);
+                wowzaJSONObject.getJSONObject("live_stream").put("schedule", new JSONObject(schedules));
 
                //String connectionCode = wowzaJSONObject.getJSONObject("live_stream").getString("connection_code");
                // String streamName = utils.generateRandomString(16);
