@@ -151,6 +151,7 @@ public class EventController {
             event.setCommission(commission);
         }
         utils.isEmptyOrNull(event.getDisplayName(), "Display Name");
+        utils.isEmptyOrNull(event.getDescription(), "Description");
         utils.isEmptyOrNull(event.getBroadcasterInfo(), "Broadcaster");
         utils.isEmptyOrNull(event.getBroadcasterInfo().getId(), "Broadcaster Id");
         utils.isIntegerGreaterThanZero(event.getBroadcasterInfo().getId(), "Broadcaster Id");
@@ -166,6 +167,11 @@ public class EventController {
         utils.isEmptyOrNull(event.getEventDuration(), "Event Duration");
         utils.isInteger(event.getEventDuration(), "Event Duration");
         utils.isEmptyOrNull(event.getActualPrice(), "Actual Price");
+        boolean  timeStampValid = utils.isTimeStampValid(event.getEventUtcDatetime().toString());
+        if(!timeStampValid){
+            throw new InvalidParameterException("The Request parameters are invalid. The parameter '" + "event time"
+                    + "' should be valid format like ('yyyy-MM-dd HH:mm:ss.S')" + ".");
+        }
 
 
         if (null != eventImage && Arrays.asList(eventImage).size() > 0) {
@@ -180,6 +186,9 @@ public class EventController {
                 }
                 return null;
             }).collect(Collectors.toList());
+        }else{
+            throw new InvalidParameterException(
+                    "The Request parameters are invalid. The parameter '" + "event image" + "' cannot be null or empty.");
         }
         if (null != eventVideo && Arrays.asList(eventVideo).size() > 0) {
             Arrays.asList(eventVideo).stream().map(file -> {
@@ -193,6 +202,9 @@ public class EventController {
                 }
                 return null;
             }).collect(Collectors.toList());
+        }else{
+            throw new InvalidParameterException(
+                    "The Request parameters are invalid. The parameter '" + "event video" + "' cannot be null or empty.");
         }
 
 
