@@ -188,11 +188,11 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
         }
 
         if (spotlightUserRepository.findByEmail(broadcasterInfoReqObj.getSpotlightUser().getEmail()) != null) {
-            this.amazonClient.deleteFileFromS3Bucket(broadcasterInfoReqObj.getBannerUrl());
+            //this.amazonClient.deleteFileFromS3Bucket(broadcasterInfoReqObj.getBannerUrl());
             throw new AlreadyExistException("Email already exists.");
         }
         Float commission = null;
-        if (broadcasterInfoReqObj.getCommission() != null) {
+       /* if (broadcasterInfoReqObj.getCommission() != null) {
             LOGGER.info("broadcasterInfo.getCommission() :::::::::::::::::::::::::::::::::::::::::: "
                     + broadcasterInfoReqObj.getCommission());
             commission = broadcasterInfoReqObj.getCommission();
@@ -201,12 +201,12 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
                     .findByName("SPOTLIGHT_DEFAULT_COMMISSION");
             commission = Float.parseFloat(defaultConfiguration.getValue().toString());
             broadcasterInfoReqObj.setCommission(commission);
-        }
+        }*/
 
         try {
             broadcasterInfoReqObj = broadcasterInfoHelper.populateBroadcasterInfo(broadcasterInfoReqObj);
             broadcasterInfoReqObj = broadcasterInfoRepository.save(broadcasterInfoReqObj);
-            if (commission != null) {
+            /*if (commission != null) {
 
                 SpotlightCommission spotlightCommissionReqObj = new SpotlightCommission();
                 spotlightCommissionReqObj.setBroadcasterInfo(broadcasterInfoReqObj);
@@ -214,7 +214,7 @@ public class BroadcasterInfoService implements IBroadcasterInfoService {
                 SpotlightCommission spotlightCommission = spotlightCommissionHelper
                         .populateSpotlightCommission(spotlightCommissionReqObj);
                 spotlightCommissionRepository.save(spotlightCommission);
-            }
+            }*/
         } catch (ConstraintViolationException | DataIntegrityViolationException sqlException) {
             this.amazonClient.deleteFileFromS3Bucket(broadcasterInfoReqObj.getBannerUrl());
             throw new Exception(sqlException.getMessage());

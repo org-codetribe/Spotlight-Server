@@ -1839,6 +1839,15 @@ public class EventService implements IEventService {
                 commission = eventReqObj.getCommission();
             }
 
+
+
+            if(eventReqObj.getEventUtcDatetime() !=null) {
+
+                /*
+                TODO
+                 */
+            }
+
             eventHelper.populateEvent(eventReqObj, eventEntity.get());
             eventRepository.save(eventEntity.get());
 

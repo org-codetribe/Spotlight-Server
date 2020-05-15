@@ -86,12 +86,12 @@ public class BroadcasterInfoHelper {
         broadcasterInfoEntity.setSpotlightUser(spotlightUserEntity);
 
         Set<Genre> genreSet = new HashSet<Genre>();
-        for (Genre genre : broadcasterInfoReqObj.getGenre()) {
+        /*for (Genre genre : broadcasterInfoReqObj.getGenre()) {
             Optional<Genre> genreEntity = genreRepository.findById(genre.getId());
             if (genreEntity.isPresent())
                 genreSet.add(genreEntity.get());
-        }
-        broadcasterInfoEntity.setGenre(genreSet);
+        }*/
+       // broadcasterInfoEntity.setGenre(genreSet);
 
         broadcasterInfoEntity
                 .setBannerUrl(broadcasterInfoReqObj.getBannerUrl() != null ? broadcasterInfoReqObj.getBannerUrl()
@@ -187,10 +187,10 @@ public class BroadcasterInfoHelper {
         broadcasterInfoObj.put("shortDesc", broadcasterInfo.getShortDesc());
         broadcasterInfoObj.put("status", broadcasterInfo.getStatus());
         broadcasterInfoObj.put("uniqueName", broadcasterInfo.getUniqueName());
-        SpotlightCommission spotlightCommissionEntity = spotlightCommissionRepository
+        /*SpotlightCommission spotlightCommissionEntity = spotlightCommissionRepository
                 .findByBroadcasterInfoAndEvent(broadcasterInfo, null);
         if (spotlightCommissionEntity != null)
-            broadcasterInfoObj.put("commission", spotlightCommissionEntity.getPercentage());
+            broadcasterInfoObj.put("commission", spotlightCommissionEntity.getPercentage());*/
 
         broadcasterInfoObj.put("spotlightUser",
                 spotlightUserHelper.buildResponseObject(broadcasterInfo.getSpotlightUser()));

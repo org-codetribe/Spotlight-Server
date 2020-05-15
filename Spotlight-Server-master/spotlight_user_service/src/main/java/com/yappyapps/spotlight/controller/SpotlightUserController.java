@@ -201,9 +201,9 @@ public class SpotlightUserController {
                     throw new ResourceNotFoundException(IConstants.RESOURCE_NOT_FOUND_MESSAGE);
                 }
 
-                if (!(viewerEntity != null && viewerEntity.getStatus() != null && utils.isActive(viewerEntity.getStatus())))
+               /* if (!(viewerEntity != null && viewerEntity.getStatus() != null && utils.isActive(viewerEntity.getStatus())))
                     throw new AccountDisabledException(IConstants.ACCOUNT_DISABLED_MESSAGE);
-
+*/
 
                 String entityPassword = viewerEntity.getPassword();
                 broadcasterInfo.getSpotlightUser().setPassword(entityPassword);
