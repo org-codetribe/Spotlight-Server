@@ -219,8 +219,8 @@ public class ViewerRestController {
                         spotlightUser.setId(broadcasterInfo.getId());
                     }
                     UserDetails userDetailsbyEmail = viewerService.loadUserByUsername(byEmailFB.getUsername());
-                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, spotlightUser);
                     Viewer viewer1 = iViewerRepository.findByEmail(viewer.getEmail());
+                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, spotlightUser,viewer1);
                     Wallet walletRep = walletRepository.findByViewerId(viewer1.getId());
                     if (walletRep == null) {
                         Wallet wallet = new Wallet();
@@ -278,7 +278,7 @@ public class ViewerRestController {
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
                         walletRepository.save(wallet);
                     }
-                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null);
+                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null,viewer1);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
                     result = utils.constructSucessJSON(jObj);
@@ -341,7 +341,7 @@ public class ViewerRestController {
                         wallet.setUpdatedOn(new Timestamp(System.currentTimeMillis()));
                         walletRepository.save(wallet);
                     }
-                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails, spotlightUser);
+                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails, spotlightUser,viewer1);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
                     result = utils.constructSucessJSON(jObj);
@@ -366,7 +366,7 @@ public class ViewerRestController {
                     }
 
 
-                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null);
+                    JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetailsbyEmail, null,viewer1);
                     JSONObject jObj = new JSONObject();
                     jObj.put(IConstants.AUTH, authObj);
                     result = utils.constructSucessJSON(jObj);
