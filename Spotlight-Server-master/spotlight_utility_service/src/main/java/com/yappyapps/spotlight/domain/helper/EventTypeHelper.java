@@ -81,6 +81,9 @@ public class EventTypeHelper {
 
 		eventTypeEntity
 				.setName(eventTypeReqObj.getName() != null ? eventTypeReqObj.getName() : eventTypeEntity.getName());
+
+		eventTypeEntity
+				.setEventTypeBannerUrl(eventTypeReqObj.getEventTypeBannerUrl() != null ? eventTypeReqObj.getEventTypeBannerUrl() : eventTypeEntity.getEventTypeBannerUrl());
 		eventTypeEntity.setEventType(eventTypeReqObj.getEventType() != null ? eventTypeReqObj.getEventType()
 				: eventTypeEntity.getEventType());
 		eventTypeEntity.setStatus(
