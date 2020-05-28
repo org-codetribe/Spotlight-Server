@@ -3,6 +3,7 @@ package com.yappyapps.spotlight.service.impl;
 import java.sql.Timestamp;
 import java.util.Optional;
 
+import com.yappyapps.spotlight.domain.*;
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -19,10 +20,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.yappyapps.spotlight.domain.BroadcasterInfo;
-import com.yappyapps.spotlight.domain.JwtSpotlightUser;
-import com.yappyapps.spotlight.domain.SpotlightUser;
-import com.yappyapps.spotlight.domain.SpotlightUserSession;
 import com.yappyapps.spotlight.domain.helper.SpotlightUserHelper;
 import com.yappyapps.spotlight.exception.AccountDisabledException;
 import com.yappyapps.spotlight.exception.AlreadyExistException;
@@ -224,7 +221,7 @@ public class SpotlightUserService implements ISpotlightUserService {
 				throw new AlreadyExistException("Session for the user already exists.");
 		}
 		
-		JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser.get());
+		JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser.get(),new Viewer());
 		
 		Timestamp currentTime = new Timestamp(System.currentTimeMillis());
 		SpotlightUserSession spotlightUserSession = new SpotlightUserSession();
