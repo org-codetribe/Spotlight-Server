@@ -341,10 +341,10 @@ public class EventTypeController {
 	 * @throws BusinessException
 	 *             BusinessException
 	 */
-	@RequestMapping(method = RequestMethod.PUT, consumes = { MediaType.APPLICATION_JSON_VALUE }, produces = {
+	@RequestMapping(method = RequestMethod.PUT, consumes = { MediaType.MULTIPART_FORM_DATA_VALUE }, produces = {
 			MediaType.APPLICATION_JSON_VALUE })
-	public @ResponseBody String updateEventType(@RequestBody String requestBody,
-			@RequestHeader("Content-Type") String contentType)
+	public @ResponseBody String updateEventType(@RequestParam(value = "request") String requestBody,
+			@RequestHeader("Content-Type") String contentType, @RequestPart(value = "eventTypeImage",required = false) MultipartFile[] eventTypeImage)
 			throws InvalidParameterException, ResourceNotFoundException, BusinessException {
 		String operation = "updateEventType";
 		LOGGER.info("EventTypeController :: " + operation + " :: RequestBody :: " + requestBody + " :: contentType :: "
@@ -356,7 +356,21 @@ public class EventTypeController {
 		EventType eventType = gson.fromJson(requestBody, EventType.class);
 		utils.isEmptyOrNull(eventType.getId(), "eventTypeId");
 		utils.isIntegerGreaterThanZero(eventType.getId(), "eventTypeId");
-		utils.isAvailableObjectEmpty(eventType.getName(), "Name");
+		//utils.isAvailableObjectEmpty(eventType.getName(), "Name");
+		if (null != eventTypeImage && Arrays.asList(eventTypeImage).size() > 0) {
+			Arrays.asList(eventTypeImage).stream().map(file -> {
+				try {
+					LOGGER.info("File Name :::::::::::::::::::::::: " + file.getName());
+					String url = this.amazonClient.uploadFile(file);
+					eventType.setEventTypeBannerUrl(url);
+					LOGGER.info("file URL :::: " + eventType.getEventTypeBannerUrl());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return null;
+			}).collect(Collectors.toList());
+		}
+
 		try {
 			result = eventTypeService.updateEventType(eventType);
 		} catch (InvalidParameterException e) {
