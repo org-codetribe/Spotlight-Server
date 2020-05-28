@@ -18,6 +18,7 @@ import java.util.TimeZone;
 
 import com.yappyapps.spotlight.domain.JwtViewer;
 import com.yappyapps.spotlight.domain.SpotlightUser;
+import com.yappyapps.spotlight.domain.Viewer;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.json.JSONArray;
@@ -634,7 +635,7 @@ public class Utils {
 	 *             JSONException
 	 * 
 	 */
-	public JSONObject buildResponseObject(JwtTokenUtil jwtTokenUtil, UserDetails userDetails, SpotlightUser isBroadCasterExist) throws JSONException {
+	public JSONObject buildResponseObject(JwtTokenUtil jwtTokenUtil, UserDetails userDetails, SpotlightUser isBroadCasterExist, Viewer viewer) throws JSONException {
 		
 		final String token = jwtTokenUtil.generateToken(userDetails);
 		final String username = jwtTokenUtil.getUsernameFromToken(token);
@@ -646,7 +647,7 @@ public class Utils {
 		if(username.startsWith("_S")){
 			authObj.put("userLoginType", "BROADCASTER");
 		}else{
-			authObj.put("userLoginType", "VIEWER");
+			authObj.put("userLoginType",viewer.getUserLoginType());
 		}
 		authObj.put("username", username);
 		authObj.put("issuedAt", issuedAt.getTime());

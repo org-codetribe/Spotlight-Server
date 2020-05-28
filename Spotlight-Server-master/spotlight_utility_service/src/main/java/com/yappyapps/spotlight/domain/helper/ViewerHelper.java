@@ -69,6 +69,7 @@ public class ViewerHelper {
         viewerEntity.setLname(viewerReqObj.getLname() != null ? viewerReqObj.getLname() : null);
         viewerEntity.setPhone(viewerReqObj.getPhone() != null ? viewerReqObj.getPhone() : null);
         viewerEntity.setEmail(viewerReqObj.getEmail() != null ? viewerReqObj.getEmail() : null);
+        viewerEntity.setUserLoginType(viewerReqObj.getUserLoginType() != null ? viewerReqObj.getUserLoginType() : "VIEWER");
         viewerEntity.setFacebookGmailId(viewerReqObj.getFacebookGmailId() != null ? viewerReqObj.getFacebookGmailId() : null);
         viewerEntity.setPassword(
                 viewerReqObj.getPassword() != null ? passwordEncoder.encode(viewerReqObj.getPassword()) : null);
@@ -133,6 +134,7 @@ public class ViewerHelper {
         viewerObj.put("updatedOn", viewer.getUpdatedOn());
         viewerObj.put("username", viewer.getUsername());
         viewerObj.put("profilePicture", viewer.getProfilePicture());
+        viewerObj.put("userLoginType", viewer.getUserLoginType());
         viewerObj.put("chatName", viewer.getChatName());
         if (viewer != null && viewer.getId() != null) {
             Wallet wallet = walletRepository.findByViewerId(viewer.getId());
@@ -181,6 +183,9 @@ public class ViewerHelper {
     public JSONArray buildResponseObject(List<Viewer> viewerList) throws JSONException {
         JSONArray viewerArr = new JSONArray();
         for (Viewer viewer : viewerList) {
+            if(viewer.getUserLoginType() != null && viewer.getUserLoginType().length() > 0 && viewer.getUserLoginType().equals("ADMIN")){
+                continue;
+            }
             JSONObject viewerObj = buildResponseObject(viewer);
             viewerArr.put(viewerObj);
         }

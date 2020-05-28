@@ -85,6 +85,10 @@ public class Viewer {
 	@Transient
 	private String socialLoginToken;
 
+	@Column(name = "USER_LOGIN_TYPE", length = 255)
+	private String userLoginType;
+
+
 
 	@Column(name = "facebook_Gmail_Ids", columnDefinition = "Text")
 	private String facebookGmailId;
@@ -314,5 +318,13 @@ public class Viewer {
 
 	public void setEmailVerify(Boolean emailVerify) {
 		isEmailVerify = emailVerify;
+	}
+
+	public String getUserLoginType() {
+		return userLoginType;
+	}
+
+	public void setUserLoginType(String userLoginType) {
+		this.userLoginType = userLoginType;
 	}
 }

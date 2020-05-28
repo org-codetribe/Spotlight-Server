@@ -287,7 +287,7 @@ public class ViewerService implements IViewerService {
 				throw new AlreadyExistException("Session for the viewer already exists.");
 
 		}*/
-        JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser);
+        JSONObject authObj = utils.buildResponseObject(jwtTokenUtil, userDetails,spotlightUser,viewer.get());
 
         Timestamp currentTime = new Timestamp(System.currentTimeMillis());
         ViewerSession viewerSession = new ViewerSession();
